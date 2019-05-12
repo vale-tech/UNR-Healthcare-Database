@@ -1,0 +1,860 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="2/17/2017 11:36:20 AM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{6BA324E7-263B-4327-879C-E01277A4408D}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadTPSScore"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="5"
+  DTS:VersionGUID="{FE85182E-8917-41BC-A0DE-E469C07DAD3C}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Create TPSScorePivot View"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{77C34134-60A9-451F-BC7E-D05563B8DEC1}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Create TPSScorePivot View"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @cols3 AS NVARCHAR(MAX)&#xA;, @cols4 AS NVARCHAR(MAX)&#xA;, @cols5 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @query3 AS NVARCHAR(MAX)&#xA;, @query4 AS NVARCHAR(MAX)&#xA;, @query5 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vTPSScorePivot', 'V') IS NOT NULL&#xA;DROP VIEW vTPSScorePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME(mis.[TPSMeasureId]) &#xA;                    FROM [UNRHealthcareData].[dbo].[TPSScore] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[TPSMeasure] m on m.TPSMeasureId = mis.TPSMeasureId&#xA;                    group by mis.[TPSMeasureId]&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;&#xA;SET @cols1 = REPLACE(@cols, '[', '[TPSId_')&#xA;SET @cols1 = REPLACE(@cols1, ']', '_MeasureScore]')&#xA;&#xA;--select @cols1&#xA;&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''TPSId_'' + CAST(mis.TPSMeasureId AS nvarchar) + ''_MeasureScore'' AS TPSMeasureIdRename, MeasureScore&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[TPSScore] mis&#x9;&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[TPSMeasure] m on m.TPSMeasureId = mis.TPSMeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(MeasureScore)&#xA;&#x9;FOR TPSMeasureIdRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;--select @query1&#xA;&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vTPSScorePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + '&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a'&#xA;&#xA;&#xA;&#xA;--select @queryfinal&#xA;execute(@queryFinal)&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Load Data Tables"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{1D539DA0-C7AD-4E99-8B46-F6288ED4CDC8}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Load Data Tables"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Load Data Tables\Lookup TPSMeasureId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup TPSMeasureId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[TPSMeasure]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[TPSMeasure]) [refTable]
+where [refTable].[MeasureName] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="TPSMeasureId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="MeasureName" dataType="DT_STR" length="255" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[MeasureName]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Load Data Tables\Lookup TPSMeasureId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Load Data Tables\Lookup TPSMeasureId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Load Data Tables\Lookup TPSMeasureId.Inputs[Lookup Input].Columns[MeasureName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="255"
+                      cachedName="MeasureName"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[MeasureName]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">MeasureName</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Load Data Tables\Lookup TPSMeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Match Output].Columns[TPSMeasureId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Match Output].Columns[TPSMeasureId]"
+                      name="TPSMeasureId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">TPSMeasureId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Load Data Tables\Lookup TPSMeasureId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Load Data Tables\Lookup TPSMeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Load Data Tables\TPSScore Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="TPSScore Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[TPSScore]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Load Data Tables\TPSScore Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].Columns[ProviderId]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="ProviderId"
+                      externalMetadataColumnId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[ProviderId]" />
+                    <inputColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].Columns[MeasureScore]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="MeasureScore"
+                      externalMetadataColumnId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureScore]"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[MeasureScore]" />
+                    <inputColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].Columns[TPSMeasureId]"
+                      cachedDataType="i4"
+                      cachedName="TPSMeasureId"
+                      externalMetadataColumnId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[TPSMeasureId]"
+                      lineageId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Match Output].Columns[TPSMeasureId]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[TPSMeasureId]"
+                      dataType="i4"
+                      name="TPSMeasureId" />
+                    <externalMetadataColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureScore" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Load Data Tables\TPSScore Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Load Data Tables\TPSScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Load Data Tables\TPSScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Load Data Tables\TPSScore Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="TPSScore Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">DECLARE @Full AS TABLE
+(
+	ProviderId varchar(10)
+	, DataYear int
+	, MeasureName varchar(255)
+	, MeasureScore varchar(100)
+)
+
+--TPS
+INSERT INTO @Full
+  SELECT [Provider Number], 2013, MeasureCode, Score
+  FROM 
+	(SELECT [Provider Number], [Unweighted Normalized Clinical Process of Care Domain Score]
+      ,[Weighted Clinical Process of Care Domain Score]
+      ,[Unweighted Patient Experience of Care Domain Score]
+      ,[Weighted Patient Experience of Care Domain Score]
+      ,[Total Performance Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_tps_05_28_2013]) p
+ UNPIVOT
+  (Score FOR MeasureCode IN ([Unweighted Normalized Clinical Process of Care Domain Score]
+      ,[Weighted Clinical Process of Care Domain Score]
+      ,[Unweighted Patient Experience of Care Domain Score]
+      ,[Weighted Patient Experience of Care Domain Score]
+      ,[Total Performance Score])) AS unpvt
+
+INSERT INTO @Full
+  SELECT [Provider Number], 2014, MeasureCode, Score
+  FROM 
+	(SELECT [Provider Number], [Unweighted Normalized Clinical Process of Care Domain Score]
+      ,[Weighted Clinical Process of Care Domain Score]
+      ,[Unweighted Patient Experience of Care Domain Score]
+      ,[Weighted Patient Experience of Care Domain Score]
+      ,[Unweighted Normalized Outcome Domain Score]
+      ,[Weighted Outcome Domain Score]
+      ,[Unweighted Normalized Efficiency Domain Score]
+      ,[Weighted Efficiency Domain Score]
+      ,[Total Performance Score]
+      FROM [HospitalCompareStage].[dbo].[2014_HVBP_TPS_10_28_2014]) p
+ UNPIVOT
+  (Score FOR MeasureCode IN ([Unweighted Normalized Clinical Process of Care Domain Score]
+      ,[Weighted Clinical Process of Care Domain Score]
+      ,[Unweighted Patient Experience of Care Domain Score]
+      ,[Weighted Patient Experience of Care Domain Score]
+      ,[Unweighted Normalized Outcome Domain Score]
+      ,[Weighted Outcome Domain Score]
+      ,[Unweighted Normalized Efficiency Domain Score]
+      ,[Weighted Efficiency Domain Score]
+      ,[Total Performance Score])) AS unpvt
+
+INSERT INTO @Full
+  SELECT [Provider Number], 2015, MeasureCode, Score
+  FROM 
+	(SELECT [Provider Number], [Unweighted Normalized Clinical Process of Care Domain Score]
+      ,[Weighted Clinical Process of Care Domain Score]
+      ,[Unweighted Patient Experience of Care Domain Score]
+      ,[Weighted Patient Experience of Care Domain Score]
+      ,[Unweighted Normalized Outcome Domain Score]
+      ,[Weighted Outcome Domain Score]
+      ,[Unweighted Normalized Efficiency Domain Score]
+      ,[Weighted Efficiency Domain Score]
+      ,[Total Performance Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_tps_10_28_2015]) p
+ UNPIVOT
+  (Score FOR MeasureCode IN ([Unweighted Normalized Clinical Process of Care Domain Score]
+      ,[Weighted Clinical Process of Care Domain Score]
+      ,[Unweighted Patient Experience of Care Domain Score]
+      ,[Weighted Patient Experience of Care Domain Score]
+      ,[Unweighted Normalized Outcome Domain Score]
+      ,[Weighted Outcome Domain Score]
+      ,[Unweighted Normalized Efficiency Domain Score]
+      ,[Weighted Efficiency Domain Score]
+      ,[Total Performance Score])) AS unpvt
+
+
+INSERT INTO @Full
+  SELECT [Provider Number], 2016, MeasureCode, Score
+  FROM 
+	(SELECT [Provider Number], [Unweighted Normalized Clinical Process of Care Domain Score]
+      ,[Weighted Clinical Process of Care Domain Score]
+      ,[Unweighted Patient Experience of Care Domain Score]
+      ,[Weighted Patient Experience of Care Domain Score]
+      ,[Unweighted Normalized Outcome Domain Score]
+      ,[Weighted Outcome Domain Score]
+      ,[Unweighted Normalized Efficiency Domain Score]
+      ,[Weighted Efficiency Domain Score]
+      ,[Total Performance Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_tps_06_08_2016]) p
+ UNPIVOT
+  (Score FOR MeasureCode IN ([Unweighted Normalized Clinical Process of Care Domain Score]
+      ,[Weighted Clinical Process of Care Domain Score]
+      ,[Unweighted Patient Experience of Care Domain Score]
+      ,[Weighted Patient Experience of Care Domain Score]
+      ,[Unweighted Normalized Outcome Domain Score]
+      ,[Weighted Outcome Domain Score]
+      ,[Unweighted Normalized Efficiency Domain Score]
+      ,[Weighted Efficiency Domain Score]
+      ,[Total Performance Score])) AS unpvt
+	
+SELECT f.ProviderId, f.DataYear, f.MeasureName, f.MeasureScore From @Full f
+INNER JOIN UNRHealthcareData.dbo.HospitalFactGeneral hfg on hfg.ProviderId = f.ProviderID and hfg.DataYear = f.DataYear
+ORDER BY f.[ProviderId], f.[DataYear], f.MeasureName</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Load Data Tables\TPSScore Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      length="10"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      name="ProviderId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[MeasureName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureName]"
+                      length="255"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[MeasureName]"
+                      name="MeasureName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[MeasureScore]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureScore]"
+                      length="100"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].Columns[MeasureScore]"
+                      name="MeasureScore"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="255"
+                      name="MeasureName" />
+                    <externalMetadataColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureScore" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      name="ProviderId" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="255"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureName]"
+                      name="MeasureName" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureScore]"
+                      name="MeasureScore" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Load Data Tables.Paths[Lookup Match Output]"
+              endId="Package\Load Data Tables\TPSScore Destination.Inputs[OLE DB Destination Input]"
+              name="Lookup Match Output"
+              startId="Package\Load Data Tables\Lookup TPSMeasureId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Load Data Tables.Paths[OLE DB Source Output]"
+              endId="Package\Load Data Tables\Lookup TPSMeasureId.Inputs[Lookup Input]"
+              name="OLE DB Source Output"
+              startId="Package\Load Data Tables\TPSScore Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{3CE3A6DB-A51F-4DAC-B945-66DDF56A396A}"
+      DTS:From="Package\Load Data Tables"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\Create TPSScorePivot View" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="208,42"
+          Id="Package\Create TPSScorePivot View"
+          TopLeft="198,161" />
+        <NodeLayout
+          Size="163,42"
+          Id="Package\Load Data Tables"
+          TopLeft="112,52" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="193.5,94">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="108.5,67"
+              Start="0,0"
+              End="108.5,59.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,29.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,29.5"
+                    Point2="0,33.5"
+                    Point3="4,33.5" />
+                  <mssgle:LineSegment
+                    End="104.5,33.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="104.5,33.5"
+                    Point2="108.5,33.5"
+                    Point3="108.5,37.5" />
+                  <mssgle:LineSegment
+                    End="108.5,59.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Load Data Tables">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="181,42"
+          Id="Package\Load Data Tables\TPSScore Destination"
+          TopLeft="204,381" />
+        <NodeLayout
+          Size="161,42"
+          Id="Package\Load Data Tables\TPSScore Source"
+          TopLeft="170,98" />
+        <NodeLayout
+          Size="186,42"
+          Id="Package\Load Data Tables\Lookup TPSMeasureId"
+          TopLeft="186,222" />
+        <EdgeLayout
+          Id="Package\Load Data Tables.Paths[OLE DB Source Output]"
+          TopLeft="250.5,140">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="28.5,82"
+              Start="0,0"
+              End="28.5,74.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,37" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,37"
+                    Point2="0,41"
+                    Point3="4,41" />
+                  <mssgle:LineSegment
+                    End="24.5,41" />
+                  <mssgle:CubicBezierSegment
+                    Point1="24.5,41"
+                    Point2="28.5,41"
+                    Point3="28.5,45" />
+                  <mssgle:LineSegment
+                    End="28.5,74.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Load Data Tables.Paths[Lookup Match Output]"
+          TopLeft="279,264">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="15.5,117"
+              Start="0,0"
+              End="15.5,109.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,54.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,54.5"
+                    Point2="0,58.5"
+                    Point3="4,58.5" />
+                  <mssgle:LineSegment
+                    End="11.5,58.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="11.5,58.5"
+                    Point2="15.5,58.5"
+                    Point3="15.5,62.5" />
+                  <mssgle:LineSegment
+                    End="15.5,109.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-40.44138671875,63.5,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Data Tables\TPSScore Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Data Tables\TPSScore Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Data Tables\Lookup TPSMeasureId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[TPSMeasure]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

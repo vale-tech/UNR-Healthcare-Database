@@ -1,0 +1,1189 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/15/2017 10:26:03 AM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{310ADEF8-F98B-484A-A59A-DE655636F2B4}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadTimelyEffectiveCare"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="18"
+  DTS:VersionGUID="{A9A31E34-B75D-43DD-B363-EA1FBA6A4BD5}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Create vTimelyEffectiveCareScorePivot"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{F8AD6D7A-FB72-46B1-A094-F34B61F87B3E}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Create vTimelyEffectiveCareScorePivot"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vTimelyEffectiveCareScorePivot', 'V') IS NOT NULL&#xA;DROP VIEW vTimelyEffectiveCareScorePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME([MeasureCode]) &#xA;                    FROM [UNRHealthcareData].[dbo].[TimelyEffectiveCareScore] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;                    group by [MeasureCode]&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;SET @cols1 = REPLACE(@cols, ']', '_Score]')&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_Score'' AS MeasureCodeRename, Score&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[TimelyEffectiveCareScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(Score)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;SET @cols2 = REPLACE(@cols, ']', '_Sample]')&#xA;&#xA;set @query2 = 'SELECT p.ProviderId, p.DataYear, ' + @cols2 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_Sample'' AS MeasureCodeRename, Sample&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[TimelyEffectiveCareScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(Sample)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols2 + ')&#xA;)p'&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vTimelyEffectiveCareScorePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + ', ' + @cols2 + ' &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;LEFT JOIN (' + @query2 + ') b ON b.ProviderId = a.ProviderId AND b.DataYear = a.DataYear'&#xA;&#xA;--select @query1&#xA;--select @query2&#xA;--select @queryFinal&#xA;&#xA;execute(@queryFinal)&#xA;&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Populate Data Tables"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{CA7997AA-3F8F-497F-A2D3-FED7152CA125}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Populate Data Tables"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Populate Data Tables\Data Conversion"
+              componentClassID="Microsoft.DataConvert"
+              contactInfo="Data Conversion;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Data Conversion"
+              name="Data Conversion"
+              usesDispositions="true">
+              <inputs>
+                <input
+                  refId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input]"
+                  name="Data Conversion Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input].Columns[ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="text"
+                      cachedName="ProviderID"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input].Columns[MeasureCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="8000"
+                      cachedName="MeasureCode"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureCode]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input].Columns[Score]"
+                      cachedCodepage="1252"
+                      cachedDataType="text"
+                      cachedName="Score"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[Score]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input].Columns[MeasureStartDate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="MeasureStartDate"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input].Columns[MeasureEndDate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="MeasureEndDate"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]" />
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output]"
+                  exclusionGroup="1"
+                  name="Data Conversion Output"
+                  synchronousInputId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]"
+                      name="Copy of ProviderID"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[ProviderID]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureCode]"
+                      name="Copy of MeasureCode"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureCode]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Score]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Score]"
+                      name="Copy of Score"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[Score]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]"
+                      name="Copy of MeasureStartDate"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]"
+                      name="Copy of MeasureEndDate"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Data Conversion Error Output"
+                  synchronousInputId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Data Tables\Lookup MeasureId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup MeasureId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[Measure]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[Measure]) [refTable]
+where [refTable].[MeasureCode] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="MeasureId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="MeasureCode" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;referenceColumn name="MeasureName" dataType="DT_STR" length="255" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureCode]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input].Columns[Copy of MeasureCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Copy of MeasureCode"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureCode]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">MeasureCode</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      name="MeasureId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">MeasureId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Data Tables\TimelyEffectiveCare Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="TimelyEffectiveCare Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[TimelyEffectiveCareScore]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].Columns[Sample]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="50"
+                      cachedName="Sample"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[Sample]"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[Sample]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].Columns[MeasureId]"
+                      cachedDataType="i4"
+                      cachedName="MeasureId"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].Columns[Copy of ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="Copy of ProviderID"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].Columns[Copy of MeasureStartDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Copy of MeasureStartDate"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].Columns[Copy of MeasureEndDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Copy of MeasureEndDate"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].Columns[Copy of Score]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Copy of Score"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[Score]"
+                      lineageId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Score]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[Score]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Score" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[Sample]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Sample" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      dataType="i4"
+                      name="MeasureId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Data Tables\TimelyEffectiveCare Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="TimelyEffectiveCare Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">SELECT 
+      [Provider Number] AS ProviderID
+	  , 2009 AS DataYear     
+	  ,RTRIM(UPPER(REPLACE([Measure Code], '-', '_'))) AS [MeasureCode]
+      ,[Score]
+      ,[Sample]
+	  , null AS MeasureStartDate
+	  , null AS MeasureEndDate
+  FROM [HospitalCompareStage].[dbo].[2009_HQI_HOSP_MSR_XWLK]
+  UNION
+  SELECT 
+      SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2010 AS DataYear   
+	  ,RTRIM(UPPER(REPLACE([Measure Code], '-', '_'))) AS [MeasureCode]
+      ,[Score]
+      ,[Sample]
+	  , null AS MeasureStartDate
+	  , null AS MeasureEndDate
+  FROM [HospitalCompareStage].[dbo].[2010_HQI_HOSP_MSR_XWLK]
+  UNION
+  SELECT 
+      SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2011 AS DataYear  
+	  ,RTRIM(UPPER(REPLACE([Measure Code], '-', '_'))) AS [MeasureCode]
+      ,[Score]
+      ,[Sample]
+	  , null AS MeasureStartDate
+	  , null AS MeasureEndDate
+  FROM [HospitalCompareStage].[dbo].[2011_HQI_HOSP_MSR_XWLK]
+  UNION
+  SELECT 
+      SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2012 AS DataYear   
+	  ,RTRIM(UPPER(REPLACE([Measure Code], '-', '_'))) AS [MeasureCode]
+      ,[Score]
+      ,[Sample]
+	  , null AS MeasureStartDate
+	  , null AS MeasureEndDate
+  FROM [HospitalCompareStage].[dbo].[2012_HQI_HOSP_MSR_XWLK]
+  UNION
+  SELECT 
+      [prvdr_id]
+	  , 2012 AS DataYear   
+	  ,RTRIM(UPPER(REPLACE([msr_cd], '-', '_'))) AS [MeasureCode]
+      ,[scr]
+      ,null
+	  , null AS MeasureStartDate
+	  , null AS MeasureEndDate
+  FROM [HospitalCompareStage].[dbo].[2012_HQI_HOSP_IMM]
+  UNION
+  SELECT 
+      SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2013 AS DataYear   
+	  ,RTRIM(UPPER(REPLACE([Measure Code], '-', '_'))) AS [MeasureCode]
+      ,[Score]
+      ,[Sample]
+	  , null AS MeasureStartDate
+	  , null AS MeasureEndDate
+  FROM [HospitalCompareStage].[dbo].[2013_HQI_HOSP_MSR_XWLK]
+  UNION
+  SELECT 
+      [prvdr_id]
+	  , 2013 AS DataYear   
+	  ,RTRIM(UPPER(REPLACE([msr_cd], '-', '_'))) AS [MeasureCode]
+      ,[scr]
+      ,null
+	  , null AS MeasureStartDate
+	  , null AS MeasureEndDate
+  FROM [HospitalCompareStage].[dbo].[2013_HQI_HOSP_IMM]
+  UNION
+  SELECT 
+      [Provider ID]
+	  , 2014 AS DataYear      
+      ,RTRIM(UPPER([Measure ID]))
+      ,[Score]
+      ,[Sample]
+	  , [Measure Start Date]
+	  , [Measure End Date]
+  FROM [HospitalCompareStage].[dbo].[2014_HQI_HOSP_TimelyEffectiveCare]
+  UNION
+  SELECT 
+      [Provider ID]
+	  , 2015 AS DataYear      
+     ,RTRIM(UPPER([Measure ID]))
+      ,[Score]
+      ,[Sample]
+	  , [Measure Start Date]
+	  , [Measure End Date]
+  FROM [HospitalCompareStage].[dbo].[2015_HQI_HOSP_TimelyEffectiveCare]
+
+  UNION
+  SELECT 
+      [Provider ID]
+	  , 2016 AS DataYear   
+	  ,RTRIM(UPPER([Measure ID]))
+      ,[Score]
+      ,[Sample]
+	  , [Measure Start Date]
+	  , [Measure End Date]
+  FROM [HospitalCompareStage].[dbo].[2016_HQI_HOSP_TimelyEffectiveCare]</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderID]"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[ProviderID]"
+                      name="ProviderID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      length="8000"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      name="MeasureCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[Score]"
+                      codePage="1252"
+                      dataType="text"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[Score]"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[Score]"
+                      name="Score"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[Sample]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[Sample]"
+                      length="50"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[Sample]"
+                      name="Sample"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      name="ProviderID" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      codePage="1252"
+                      dataType="text"
+                      name="MeasureCode" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[Score]"
+                      codePage="1252"
+                      dataType="text"
+                      name="Score" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[Sample]"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
+                      name="Sample" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[ProviderID]"
+                      name="ProviderID" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      name="MeasureCode" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[Score]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[Score]"
+                      name="Score" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[Sample]"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[Sample]"
+                      name="Sample" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Populate Data Tables.Paths[Data Conversion Output]"
+              endId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]"
+              name="Data Conversion Output"
+              startId="Package\Populate Data Tables\Data Conversion.Outputs[Data Conversion Output]" />
+            <path
+              refId="Package\Populate Data Tables.Paths[Lookup Match Output]"
+              endId="Package\Populate Data Tables\TimelyEffectiveCare Destination.Inputs[OLE DB Destination Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate Data Tables.Paths[OLE DB Source Output]"
+              endId="Package\Populate Data Tables\Data Conversion.Inputs[Data Conversion Input]"
+              name="OLE DB Source Output"
+              startId="Package\Populate Data Tables\TimelyEffectiveCare Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 1]"
+      DTS:CreationName=""
+      DTS:DTSID="{561024E1-473A-4E03-9474-5BAE911636C1}"
+      DTS:From="Package\Populate Data Tables"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 1"
+      DTS:To="Package\Create vTimelyEffectiveCareScorePivot" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="262,42"
+          Id="Package\Create vTimelyEffectiveCareScorePivot"
+          TopLeft="216,279" />
+        <NodeLayout
+          Size="181,42"
+          Id="Package\Populate Data Tables"
+          TopLeft="183,200" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 1]"
+          TopLeft="273.5,242">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="73.5,37"
+              Start="0,0"
+              End="73.5,29.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,14.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,14.5"
+                    Point2="0,18.5"
+                    Point3="4,18.5" />
+                  <mssgle:LineSegment
+                    End="69.5,18.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="69.5,18.5"
+                    Point2="73.5,18.5"
+                    Point3="73.5,22.5" />
+                  <mssgle:LineSegment
+                    End="73.5,29.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Populate Data Tables">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="230,42"
+          Id="Package\Populate Data Tables\TimelyEffectiveCare Destination"
+          TopLeft="181,367" />
+        <NodeLayout
+          Size="158,42"
+          Id="Package\Populate Data Tables\Data Conversion"
+          TopLeft="132,141" />
+        <NodeLayout
+          Size="209,42"
+          Id="Package\Populate Data Tables\TimelyEffectiveCare Source"
+          TopLeft="95,60" />
+        <NodeLayout
+          Size="168,42"
+          Id="Package\Populate Data Tables\Lookup MeasureId"
+          TopLeft="164,248" />
+        <EdgeLayout
+          Id="Package\Populate Data Tables.Paths[OLE DB Source Output]"
+          TopLeft="199.5,102">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="11.5,39"
+              Start="0,0"
+              End="11.5,31.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,15.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,15.5"
+                    Point2="0,19.5"
+                    Point3="4,19.5" />
+                  <mssgle:LineSegment
+                    End="7.5,19.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="7.5,19.5"
+                    Point2="11.5,19.5"
+                    Point3="11.5,23.5" />
+                  <mssgle:LineSegment
+                    End="11.5,31.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate Data Tables.Paths[Lookup Match Output]"
+          TopLeft="248,290">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="48,77"
+              Start="0,0"
+              End="48,69.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,34.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,34.5"
+                    Point2="0,38.5"
+                    Point3="4,38.5" />
+                  <mssgle:LineSegment
+                    End="44,38.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="44,38.5"
+                    Point2="48,38.5"
+                    Point3="48,42.5" />
+                  <mssgle:LineSegment
+                    End="48,69.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-24.19138671875,43.5,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate Data Tables.Paths[Data Conversion Output]"
+          TopLeft="211,183">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="37,65"
+              Start="0,0"
+              End="37,57.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,28.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,28.5"
+                    Point2="0,32.5"
+                    Point3="4,32.5" />
+                  <mssgle:LineSegment
+                    End="33,32.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="33,32.5"
+                    Point2="37,32.5"
+                    Point3="37,36.5" />
+                  <mssgle:LineSegment
+                    End="37,57.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\TimelyEffectiveCare Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\TimelyEffectiveCare Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\Lookup MeasureId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[Measure]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

@@ -1,0 +1,1817 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/17/2017 6:58:59 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{6C718DD9-7A99-4904-83C5-5C80BD33991B}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadHealthcareAssociatedInfection"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="18"
+  DTS:VersionGUID="{6E7CB036-A71F-4B9E-A77D-170ADEF854C3}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\CREATE vHealthcareAssociatedInfectionScoresPivot"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{E2C741C9-42B8-44E6-8D49-C2DE4D772524}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="CREATE vHealthcareAssociatedInfectionScoresPivot"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @cols3 AS NVARCHAR(MAX)&#xA;, @cols4 AS NVARCHAR(MAX)&#xA;, @cols5 AS NVARCHAR(MAX)&#xA;, @cols6 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @query3 AS NVARCHAR(MAX)&#xA;, @query4 AS NVARCHAR(MAX)&#xA;, @query5 AS NVARCHAR(MAX)&#xA;, @query6 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vHealthcareAssociatedInfectionScorePivot', 'V') IS NOT NULL&#xA;DROP VIEW vHealthcareAssociatedInfectionScorePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME([MeasureCode]) &#xA;                    FROM [UNRHealthcareData].[dbo].[HealthcareAssociatedInfectionScore] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;                    group by [MeasureCode]&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;SET @cols1 = REPLACE(@cols, ']', '_StandardizedInfectionRatio]')&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_StandardizedInfectionRatio'' AS MeasureCodeRename, StandardizedInfectionRatio&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HealthcareAssociatedInfectionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(StandardizedInfectionRatio)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;--select @query1&#xA;&#xA;SET @cols2 = REPLACE(@cols, ']', '_ConfidenceIntervalLower]')&#xA;&#xA;set @query2 = 'SELECT p.ProviderId, p.DataYear, ' + @cols2 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_ConfidenceIntervalLower'' AS MeasureCodeRename, ConfidenceIntervalLower&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HealthcareAssociatedInfectionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(ConfidenceIntervalLower)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols2 + ')&#xA;)p'&#xA;&#xA;SET @cols3 = REPLACE(@cols, ']', '_ConfidenceIntervalHigher]')&#xA;&#xA;set @query3 = 'SELECT p.ProviderId, p.DataYear, ' + @cols3 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_ConfidenceIntervalHigher'' AS MeasureCodeRename, ConfidenceIntervalHigher&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HealthcareAssociatedInfectionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(ConfidenceIntervalHigher)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols3 + ')&#xA;)p'&#xA;&#xA;SET @cols4 = REPLACE(@cols, ']', '_Numerator]')&#xA;&#xA;set @query4 = 'SELECT p.ProviderId, p.DataYear, ' + @cols4 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_Numerator'' AS MeasureCodeRename, Numerator&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HealthcareAssociatedInfectionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(Numerator)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols4 + ')&#xA;)p'&#xA;&#xA;SET @cols5 = REPLACE(@cols, ']', '_NumberOfDaysOrPatients]')&#xA;&#xA;set @query5 = 'SELECT p.ProviderId, p.DataYear, ' + @cols5 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_NumberOfDaysOrPatients'' AS MeasureCodeRename, NumberOfDaysOrPatients&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HealthcareAssociatedInfectionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(NumberOfDaysOrPatients)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols5 + ')&#xA;)p'&#xA;&#xA;SET @cols6 = REPLACE(@cols, ']', '_NationalComparisonCategory]')&#xA;&#xA;set @query6 = 'SELECT p.ProviderId, p.DataYear, ' + @cols6 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_NationalComparisonCategory'' AS MeasureCodeRename, Category AS NationalComparisonCategory&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HealthcareAssociatedInfectionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[NationalComparisonCategory] c on c.NationalComparisonCategoryId = mis.NationalComparisonCategoryId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(NationalComparisonCategory)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols6 + ')&#xA;)p'&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vHealthcareAssociatedInfectionScorePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + ', ' + @cols2 + ', ' + @cols3 + ', ' + @cols4 + ', ' + @cols5 + ', ' + @cols6 + '&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query2 + ') b ON b.ProviderId = a.ProviderId AND b.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query3 + ') c ON c.ProviderId = a.ProviderId AND c.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query4 + ') d ON d.ProviderId = a.ProviderId AND d.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query5 + ') e ON d.ProviderId = e.ProviderId AND e.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query6 + ') f ON d.ProviderId = f.ProviderId AND f.DataYear = a.DataYear'&#xA;&#xA;&#xA;&#xA;--select @queryfinal&#xA;execute(@queryFinal)&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Populate HealthcareAssociatedInfectionScores"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{B1A3F5F9-0A8B-4801-B717-5FEA272FEF85}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Populate HealthcareAssociatedInfectionScores"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name"
+              componentClassID="Microsoft.DerivedColumn"
+              contactInfo="Derived Column;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Creates new column values by applying expressions to transformation input columns. Create new columns or overwrite existing ones. For example, concatenate the values from the 'first name' and 'last name' column to make a 'full name' column."
+              name="Derive Package Name"
+              usesDispositions="true">
+              <inputs>
+                <input
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Inputs[Derived Column Input]"
+                  description="Input to the Derived Column Transformation"
+                  name="Derived Column Input">
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Output]"
+                  description="Default Output of the Derived Column Transformation"
+                  exclusionGroup="1"
+                  name="Derived Column Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Inputs[Derived Column Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Output].Columns[PackageName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Computation"
+                      errorRowDisposition="FailComponent"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Output].Columns[PackageName]"
+                      name="PackageName"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Derived Column Expression"
+                          name="Expression">@[System::PackageName]</property>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Derived Column Friendly Expression"
+                          expressionType="Notify"
+                          name="FriendlyExpression">@[System::PackageName]</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Error Output]"
+                  description="Error Output of the Derived Column Transformation"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Derived Column Error Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Inputs[Derived Column Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="HealthcareAssociatedInfectionScore Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[HealthcareAssociatedInfectionScore]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="ProviderID"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[StandardizedInfectionRatio]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="StandardizedInfectionRatio"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[StandardizedInfectionRatio]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[StandardizedInfectionRatio]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[ConfidenceIntervalLower]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="ConfidenceIntervalLower"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ConfidenceIntervalLower]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ConfidenceIntervalLower]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[ConfidenceIntervalHigher]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="ConfidenceIntervalHigher"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ConfidenceIntervalHigher]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ConfidenceIntervalHigher]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[Numerator]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Numerator"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[Numerator]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[Numerator]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[NumberofDaysorPatients]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="NumberofDaysorPatients"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[NumberofDaysorPatients]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[NumberofDaysorPatients]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[MeasureStartDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="MeasureStartDate"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[MeasureEndDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="MeasureEndDate"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[MeasureId]"
+                      cachedDataType="i4"
+                      cachedName="MeasureId"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].Columns[NationalComparisonCategoryId]"
+                      cachedDataType="i4"
+                      cachedName="NationalComparisonCategoryId"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[NationalComparisonCategoryId]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Match Output].Columns[NationalComparisonCategoryId]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[StandardizedInfectionRatio]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="StandardizedInfectionRatio" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ConfidenceIntervalLower]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ConfidenceIntervalLower" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ConfidenceIntervalHigher]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ConfidenceIntervalHigher" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[Numerator]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Numerator" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[NumberofDaysorPatients]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NumberofDaysorPatients" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      dataType="i4"
+                      name="MeasureId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[NationalComparisonCategoryId]"
+                      dataType="i4"
+                      name="NationalComparisonCategoryId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="HealthcareAssociatedInfectionScore Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">USE [HospitalCompareStage]
+
+declare @Full Table 
+(
+ProviderID varchar(10),
+DataYear int,
+StandardizedInfectionRatio varchar(100),
+ConfidenceIntervalLower varchar(100),
+ConfidenceIntervalHigher varchar(100),
+Numerator varchar(100),
+NumberofDaysorPatients varchar(100),
+EligibleCases varchar(100),
+MeasureCode varchar(100),
+NationalComparisonCategory varchar(100),
+MeasureStartDate datetime,
+MeasureEndDate datetime
+)
+
+INSERT INTO @Full (ProviderID, DataYear, MeasureCode, StandardizedInfectionRatio
+						, ConfidenceIntervalLower, ConfidenceIntervalHigher
+						, Numerator, EligibleCases
+						, NumberofDaysorPatients
+						, NationalComparisonCategory, MeasureStartDate, MeasureEndDate
+						)
+SELECT 
+b.[prvdr_id]
+, 2012
+,RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', '')))
+,b.[scr]
+,s.scr
+, s1.scr
+, s2.scr
+, s3.scr
+, s4.scr
+, 'Missing', null, null
+FROM [HospitalCompareStage].[dbo].[2012_HQI_HOSP_HAI] b
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2012_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_LOWER') s on s.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_CI_LOWER' = s.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2012_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_UPPER') s1 on s1.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_CI_UPPER' = s1.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2012_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_NUMERATOR') s2 on s2.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_NUMERATOR' = s2.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2012_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_ELIGCASES') s3 on s3.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_ELIGCASES' = s3.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2012_HQI_HOSP_HAI] WHERE ([msr_cd] LIKE '%_DEVICEDAYS' OR [msr_cd] LIKE '%PROCDAYS')) s4 on s4.[prvdr_id] = b.[prvdr_id] AND (RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_DEVICEDAYS' = s4.[msr_cd] OR RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_PROCDAYS' = s4.[msr_cd])
+WHERE 
+
+	b.MSR_CD NOT LIKE '%days%'
+AND
+	b.MSR_CD NOT LIKE '%_LOWER%'
+AND
+	b.MSR_CD NOT LIKE '%_UPPER%'
+AND
+	b.MSR_CD NOT LIKE '%_ELIGCASES%'
+AND
+	b.MSR_CD NOT LIKE '%_NUMERATOR%'
+ORDER BY 
+	b.prvdr_id, b.msr_cd
+
+INSERT INTO @Full (ProviderID, DataYear, MeasureCode, StandardizedInfectionRatio
+						, ConfidenceIntervalLower, ConfidenceIntervalHigher
+						, Numerator, EligibleCases
+						, NumberofDaysorPatients
+						, NationalComparisonCategory, MeasureStartDate, MeasureEndDate
+						)
+SELECT 
+b.[prvdr_id]
+, 2013
+,RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', '')))
+,b.[scr]
+,s.scr
+, s1.scr
+, s2.scr
+, s3.scr
+, s4.scr
+, CASE 
+	WHEN s5.scr IN ('Better than the U.S. National Benchmark', 'Better than the National Benchmark') THEN 'Better than the National Rate'
+	WHEN s5.scr IN ('No Different than U.S. National Benchmark', 'No Different than National Benchmark') THEN 'No Different than the National Rate'
+	WHEN s5.scr IN ('Worse than the U.S. National Benchmark', 'Worse than the National Benchmark') THEN 'Worse than the National Rate'
+	WHEN S5.scr is null THEN 'Missing'
+	ELSE s5.scr END
+, null, null
+FROM [HospitalCompareStage].[dbo].[2013_HQI_HOSP_HAI] b
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2013_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_LOWER') s on s.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_CI_LOWER' = s.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2013_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_UPPER') s1 on s1.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_CI_UPPER' = s1.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2013_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_NUMERATOR') s2 on s2.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_NUMERATOR' = s2.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2013_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_ELIGCASES') s3 on s3.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_ELIGCASES' = s3.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2013_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_DOPD_DAYS') s4 on s4.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_DOPD_DAYS' = s4.[msr_cd]
+INNER JOIN (SELECT [prvdr_id], [scr], [msr_cd] FROM [2013_HQI_HOSP_HAI] WHERE [msr_cd] LIKE '%_COMPARED_TO_NATL') s5 on s5.[prvdr_id] = b.[prvdr_id] AND RTRIM(UPPER(REPLACE(b.[msr_cd], '_SIR', ''))) + '_COMPARED_TO_NATL' = s5.[msr_cd]
+WHERE
+	b.MSR_CD NOT LIKE '%days%'
+AND
+	b.MSR_CD NOT LIKE '%_LOWER%'
+AND
+	b.MSR_CD NOT LIKE '%_UPPER%'
+AND
+	b.MSR_CD NOT LIKE '%_ELIGCASES%'
+AND
+	b.MSR_CD NOT LIKE '%_NUMERATOR%'
+ORDER BY 
+	b.prvdr_id, b.msr_cd
+
+INSERT INTO @Full (ProviderID, DataYear, MeasureCode, StandardizedInfectionRatio
+						, ConfidenceIntervalLower, ConfidenceIntervalHigher
+						, Numerator, EligibleCases
+						, NumberofDaysorPatients
+						, NationalComparisonCategory, MeasureStartDate, MeasureEndDate
+						)
+SELECT 
+b.[Provider ID]
+, 2014
+,RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', '')))
+,b.[Score]
+,s.Score
+, s1.Score
+, s2.Score
+, s3.Score
+, s4.Score
+, CASE 
+	WHEN b.[Compared to National] IN ('Better than the U.S. National Benchmark', 'Better than the National Benchmark') THEN 'Better than the National Rate'
+	WHEN b.[Compared to National] IN ('No Different than U.S. National Benchmark', 'No Different than National Benchmark') THEN 'No Different than the National Rate'
+	WHEN b.[Compared to National] IN ('Worse than the U.S. National Benchmark', 'Worse than the National Benchmark') THEN 'Worse than the National Rate'
+	WHEN b.[Compared to National] is null THEN 'Missing'
+	ELSE b.[Compared to National] END
+, [Measure Start Date], [Measure End Date]
+FROM [HospitalCompareStage].[dbo].[2014_HQI_HOSP_HAI] b
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2014_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_LOWER') s on s.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_CI_LOWER' = s.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2014_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_UPPER') s1 on s1.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_CI_UPPER' = s1.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2014_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_NUMERATOR') s2 on s2.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_NUMERATOR' = s2.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2014_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_ELIGCASES') s3 on s3.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_ELIGCASES' = s3.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2014_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_DOPC_DAYS') s4 on s4.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_DOPC_DAYS' = s4.[Measure ID]
+WHERE
+	b.[Measure ID] NOT LIKE '%days%'
+AND
+	b.[Measure ID] NOT LIKE '%_LOWER%'
+AND
+	b.[Measure ID] NOT LIKE '%_UPPER%'
+AND
+	b.[Measure ID] NOT LIKE '%_ELIGCASES%'
+AND
+	b.[Measure ID] NOT LIKE '%_NUMERATOR%'
+ORDER BY 
+	b.[Provider ID], b.[Measure ID]
+
+INSERT INTO @Full (ProviderID, DataYear, MeasureCode, StandardizedInfectionRatio
+						, ConfidenceIntervalLower, ConfidenceIntervalHigher
+						, Numerator, EligibleCases
+						, NumberofDaysorPatients
+						, NationalComparisonCategory, MeasureStartDate, MeasureEndDate
+						)
+SELECT 
+b.[Provider ID]
+, 2015
+,RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', '')))
+,b.[Score]
+,s.Score
+, s1.Score
+, s2.Score
+, s3.Score
+, s4.Score
+, CASE 
+	WHEN b.[Compared to National] IN ('Better than the U.S. National Benchmark', 'Better than the National Benchmark') THEN 'Better than the National Rate'
+	WHEN b.[Compared to National] IN ('No Different than U.S. National Benchmark', 'No Different than National Benchmark') THEN 'No Different than the National Rate'
+	WHEN b.[Compared to National] IN ('Worse than the U.S. National Benchmark', 'Worse than the National Benchmark') THEN 'Worse than the National Rate'
+	WHEN b.[Compared to National] is null THEN 'Missing'
+	ELSE b.[Compared to National] END
+, [Measure Start Date], [Measure End Date]
+FROM [HospitalCompareStage].[dbo].[2015_HQI_HOSP_HAI] b
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2015_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_LOWER') s on s.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_CI_LOWER' = s.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2015_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_UPPER') s1 on s1.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_CI_UPPER' = s1.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2015_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_NUMERATOR') s2 on s2.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_NUMERATOR' = s2.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2015_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_ELIGCASES') s3 on s3.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_ELIGCASES' = s3.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2015_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_DOPC_DAYS') s4 on s4.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_DOPC_DAYS' = s4.[Measure ID]
+WHERE
+	b.[Measure ID] NOT LIKE '%days%'
+AND
+	b.[Measure ID] NOT LIKE '%_LOWER%'
+AND
+	b.[Measure ID] NOT LIKE '%_UPPER%'
+AND
+	b.[Measure ID] NOT LIKE '%_ELIGCASES%'
+AND
+	b.[Measure ID] NOT LIKE '%_NUMERATOR%'
+ORDER BY 
+	b.[Provider ID], b.[Measure ID]
+
+INSERT INTO @Full (ProviderID, DataYear, MeasureCode, StandardizedInfectionRatio
+						, ConfidenceIntervalLower, ConfidenceIntervalHigher
+						, Numerator, EligibleCases
+						, NumberofDaysorPatients
+						, NationalComparisonCategory, MeasureStartDate, MeasureEndDate
+						)
+SELECT 
+b.[Provider ID]
+, 2016
+,RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', '')))
+,b.[Score]
+,s.Score
+, s1.Score
+, s2.Score
+, s3.Score
+, s4.Score
+, CASE 
+	WHEN b.[Compared to National] IN ('Better than the U.S. National Benchmark', 'Better than the National Benchmark') THEN 'Better than the National Rate'
+	WHEN b.[Compared to National] IN ('No Different than U.S. National Benchmark', 'No Different than National Benchmark') THEN 'No Different than the National Rate'
+	WHEN b.[Compared to National] IN ('Worse than the U.S. National Benchmark', 'Worse than the National Benchmark') THEN 'Worse than the National Rate'
+	WHEN b.[Compared to National] is null THEN 'Missing'
+	ELSE b.[Compared to National] END
+, [Measure Start Date], [Measure End Date]
+FROM [HospitalCompareStage].[dbo].[2016_HQI_HOSP_HAI] b
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2016_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_LOWER') s on s.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_CI_LOWER' = s.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2016_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_UPPER') s1 on s1.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_CI_UPPER' = s1.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2016_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_NUMERATOR') s2 on s2.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_NUMERATOR' = s2.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2016_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_ELIGCASES') s3 on s3.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_ELIGCASES' = s3.[Measure ID]
+INNER JOIN (SELECT [Provider ID], [Score], [Measure ID] FROM [2016_HQI_HOSP_HAI] WHERE [Measure ID] LIKE '%_DOPC_DAYS') s4 on s4.[Provider ID] = b.[Provider ID] AND RTRIM(UPPER(REPLACE(b.[Measure ID], '_SIR', ''))) + '_DOPC_DAYS' = s4.[Measure ID]
+WHERE
+	b.[Measure ID] NOT LIKE '%days%'
+AND
+	b.[Measure ID] NOT LIKE '%_LOWER%'
+AND
+	b.[Measure ID] NOT LIKE '%_UPPER%'
+AND
+	b.[Measure ID] NOT LIKE '%_ELIGCASES%'
+AND
+	b.[Measure ID] NOT LIKE '%_NUMERATOR%'
+ORDER BY 
+	b.[Provider ID], b.[Measure ID]
+
+SELECT * FROM @Full ORDER BY ProviderID, MeasureCode, DataYear</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ProviderID]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderID]"
+                      length="10"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ProviderID]"
+                      name="ProviderID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[StandardizedInfectionRatio]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[StandardizedInfectionRatio]"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[StandardizedInfectionRatio]"
+                      name="StandardizedInfectionRatio"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ConfidenceIntervalLower]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ConfidenceIntervalLower]"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ConfidenceIntervalLower]"
+                      name="ConfidenceIntervalLower"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ConfidenceIntervalHigher]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ConfidenceIntervalHigher]"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ConfidenceIntervalHigher]"
+                      name="ConfidenceIntervalHigher"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[Numerator]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[Numerator]"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[Numerator]"
+                      name="Numerator"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[NumberofDaysorPatients]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[NumberofDaysorPatients]"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[NumberofDaysorPatients]"
+                      name="NumberofDaysorPatients"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[EligibleCases]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[EligibleCases]"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[EligibleCases]"
+                      name="EligibleCases"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      name="MeasureCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[NationalComparisonCategory]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[NationalComparisonCategory]"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[NationalComparisonCategory]"
+                      name="NationalComparisonCategory"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderID]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderID" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[StandardizedInfectionRatio]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="StandardizedInfectionRatio" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ConfidenceIntervalLower]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ConfidenceIntervalLower" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ConfidenceIntervalHigher]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ConfidenceIntervalHigher" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[Numerator]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Numerator" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[NumberofDaysorPatients]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NumberofDaysorPatients" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[EligibleCases]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="EligibleCases" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureCode" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[NationalComparisonCategory]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NationalComparisonCategory" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ProviderID]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ProviderID]"
+                      name="ProviderID" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[StandardizedInfectionRatio]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[StandardizedInfectionRatio]"
+                      name="StandardizedInfectionRatio" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ConfidenceIntervalLower]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ConfidenceIntervalLower]"
+                      name="ConfidenceIntervalLower" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ConfidenceIntervalHigher]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ConfidenceIntervalHigher]"
+                      name="ConfidenceIntervalHigher" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[Numerator]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[Numerator]"
+                      name="Numerator" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[NumberofDaysorPatients]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[NumberofDaysorPatients]"
+                      name="NumberofDaysorPatients" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[EligibleCases]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[EligibleCases]"
+                      name="EligibleCases" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      name="MeasureCode" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[NationalComparisonCategory]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[NationalComparisonCategory]"
+                      name="NationalComparisonCategory" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup MeasureId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[Measure]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[Measure]) [refTable]
+where [refTable].[MeasureCode] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="MeasureId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="MeasureCode" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;referenceColumn name="MeasureName" dataType="DT_STR" length="255" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureCode]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Inputs[Lookup Input].Columns[MeasureCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="MeasureCode"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[MeasureCode]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">MeasureCode</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      name="MeasureId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">MeasureId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup NationalComparisonCategoryId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[NationalComparisonCategory]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[NationalComparisonCategory]) [refTable]
+where [refTable].[Category] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="NationalComparisonCategoryId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="Category" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[NationalComparisonCategory]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Inputs[Lookup Input].Columns[NationalComparisonCategory]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="NationalComparisonCategory"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[NationalComparisonCategory]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">Category</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="RedirectRow"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Match Output].Columns[NationalComparisonCategoryId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Match Output].Columns[NationalComparisonCategoryId]"
+                      name="NationalComparisonCategoryId"
+                      truncationRowDisposition="RedirectRow">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">NationalComparisonCategoryId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="NationalComparisonCategory Failure Rows"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[NationalComparisonCategoryLookupErrors]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="ProviderID"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ProviderID]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[NationalComparisonCategory]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="NationalComparisonCategory"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[NationalComparisonCategory]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output].Columns[NationalComparisonCategory]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[ErrorCode]"
+                      cachedDataType="i4"
+                      cachedName="ErrorCode"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ErrorCode]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Error Output].Columns[ErrorCode]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[ErrorColumn]"
+                      cachedDataType="i4"
+                      cachedName="ErrorColumn"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ErrorColumn]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Error Output].Columns[ErrorColumn]" />
+                    <inputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[PackageName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="PackageName"
+                      externalMetadataColumnId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[PackageName]"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Output].Columns[PackageName]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ProviderID]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderID" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[NationalComparisonCategory]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NationalComparisonCategory" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ErrorCode]"
+                      dataType="i4"
+                      name="ErrorCode" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ErrorColumn]"
+                      dataType="i4"
+                      name="ErrorColumn" />
+                    <externalMetadataColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[PackageName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="PackageName" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Populate HealthcareAssociatedInfectionScores.Paths[Derived Column Output]"
+              endId="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input]"
+              name="Derived Column Output"
+              startId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Outputs[Derived Column Output]" />
+            <path
+              refId="Package\Populate HealthcareAssociatedInfectionScores.Paths[Lookup Error Output]"
+              endId="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name.Inputs[Derived Column Input]"
+              name="Lookup Error Output"
+              startId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Error Output]" />
+            <path
+              refId="Package\Populate HealthcareAssociatedInfectionScores.Paths[Lookup Match Output]"
+              endId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Inputs[Lookup Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate HealthcareAssociatedInfectionScores.Paths[Lookup Match Output1]"
+              endId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination.Inputs[OLE DB Destination Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate HealthcareAssociatedInfectionScores.Paths[OLE DB Source Output]"
+              endId="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId.Inputs[Lookup Input]"
+              name="OLE DB Source Output"
+              startId="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{A99F6A16-74A0-430A-8654-AE4E24AB7287}"
+      DTS:From="Package\Populate HealthcareAssociatedInfectionScores"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\CREATE vHealthcareAssociatedInfectionScoresPivot" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="165,42"
+          Id="Package\CREATE vHealthcareAssociatedInfectionScoresPivot"
+          TopLeft="157,163" />
+        <NodeLayout
+          Size="298,42"
+          Id="Package\Populate HealthcareAssociatedInfectionScores"
+          TopLeft="77,78" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="226,120">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="13.5,43"
+              Start="0,0"
+              End="13.5,35.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,17.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,17.5"
+                    Point2="0,21.5"
+                    Point3="4,21.5" />
+                  <mssgle:LineSegment
+                    End="9.5,21.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="9.5,21.5"
+                    Point2="13.5,21.5"
+                    Point3="13.5,25.5" />
+                  <mssgle:LineSegment
+                    End="13.5,35.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Populate HealthcareAssociatedInfectionScores">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="16" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="284,42"
+          Id="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source"
+          TopLeft="102,61" />
+        <NodeLayout
+          Size="280,42"
+          Id="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows"
+          TopLeft="770,279" />
+        <NodeLayout
+          Size="305,42"
+          Id="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination"
+          TopLeft="166,381" />
+        <NodeLayout
+          Size="168,42"
+          Id="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId"
+          TopLeft="175,180" />
+        <NodeLayout
+          Size="264,42"
+          Id="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId"
+          TopLeft="104,288" />
+        <NodeLayout
+          Size="184,42"
+          Id="Package\Populate HealthcareAssociatedInfectionScores\Derive Package Name"
+          TopLeft="485,278" />
+        <EdgeLayout
+          Id="Package\Populate HealthcareAssociatedInfectionScores.Paths[OLE DB Source Output]"
+          TopLeft="244,103">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="15,77"
+              Start="0,0"
+              End="15,69.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,34.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,34.5"
+                    Point2="0,38.5"
+                    Point3="4,38.5" />
+                  <mssgle:LineSegment
+                    End="11,38.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="11,38.5"
+                    Point2="15,38.5"
+                    Point3="15,42.5" />
+                  <mssgle:LineSegment
+                    End="15,69.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate HealthcareAssociatedInfectionScores.Paths[Lookup Match Output1]"
+          TopLeft="236,330">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="82.5,51"
+              Start="0,0"
+              End="82.5,43.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,21.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,21.5"
+                    Point2="0,25.5"
+                    Point3="4,25.5" />
+                  <mssgle:LineSegment
+                    End="78.5,25.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="78.5,25.5"
+                    Point2="82.5,25.5"
+                    Point3="82.5,29.5" />
+                  <mssgle:LineSegment
+                    End="82.5,43.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-6.94138671875,30.5,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate HealthcareAssociatedInfectionScores.Paths[Lookup Match Output]"
+          TopLeft="259,222">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-23,66"
+              Start="0,0"
+              End="-23,58.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,29" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,29"
+                    Point2="0,33"
+                    Point3="-4,33" />
+                  <mssgle:LineSegment
+                    End="-19,33" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-19,33"
+                    Point2="-23,33"
+                    Point3="-23,37" />
+                  <mssgle:LineSegment
+                    End="-23,58.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-59.69138671875,38,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate HealthcareAssociatedInfectionScores.Paths[Lookup Error Output]"
+          TopLeft="368,309">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="117,-10"
+              Start="0,0"
+              End="109.5,-10">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="54.5,0" />
+                  <mssgle:CubicBezierSegment
+                    Point1="54.5,0"
+                    Point2="58.5,0"
+                    Point3="58.5,-4" />
+                  <mssgle:LineSegment
+                    End="58.5,-6" />
+                  <mssgle:CubicBezierSegment
+                    Point1="58.5,-6"
+                    Point2="58.5,-10"
+                    Point3="62.5,-10" />
+                  <mssgle:LineSegment
+                    End="109.5,-10" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="12.63361328125,1,91.7327734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate HealthcareAssociatedInfectionScores.Paths[Derived Column Output]"
+          TopLeft="669,299.5">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="101,0"
+              Start="0,0"
+              End="93.5,0">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="93.5,0" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate HealthcareAssociatedInfectionScores\NationalComparisonCategory Failure Rows">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate HealthcareAssociatedInfectionScores\HealthcareAssociatedInfectionScore Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate HealthcareAssociatedInfectionScores\Lookup MeasureId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[Measure]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate HealthcareAssociatedInfectionScores\Lookup NationalComparisonCategoryId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[NationalComparisonCategory]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

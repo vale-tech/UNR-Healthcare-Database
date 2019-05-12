@@ -1,0 +1,1049 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/18/2017 10:26:29 AM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{EA8BFBDA-D7BC-4C1D-A872-A8389B6E8305}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadReadmissionReductionScore"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="6"
+  DTS:VersionGUID="{97BDF462-6AAD-478F-BCCA-9D864007451A}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\CREATE vReadmissionReductionScorePivot"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{6BA59729-4ED6-4D9D-8E42-09B729BCFC16}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="CREATE vReadmissionReductionScorePivot"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @cols3 AS NVARCHAR(MAX)&#xA;, @cols4 AS NVARCHAR(MAX)&#xA;, @cols5 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @query3 AS NVARCHAR(MAX)&#xA;, @query4 AS NVARCHAR(MAX)&#xA;, @query5 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vReadmissionReductionScorePivot', 'V') IS NOT NULL&#xA;DROP VIEW vReadmissionReductionScorePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME([MeasureCode]) &#xA;                    FROM [UNRHealthcareData].[dbo].[ReadmissionReductionScore] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;                    group by [MeasureCode]&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;SET @cols1 = REPLACE(@cols, ']', '_NumberOfDischarges]')&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_NumberOfDischarges'' AS MeasureCodeRename, NumberOfDischarges&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmissionReductionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(NumberOfDischarges)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;--select @query1&#xA;&#xA;SET @cols2 = REPLACE(@cols, ']', '_ExcessReadmissionRatio]')&#xA;&#xA;set @query2 = 'SELECT p.ProviderId, p.DataYear, ' + @cols2 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_ExcessReadmissionRatio'' AS MeasureCodeRename, ExcessReadmissionRatio&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmissionReductionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(ExcessReadmissionRatio)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols2 + ')&#xA;)p'&#xA;&#xA;SET @cols3 = REPLACE(@cols, ']', '_PredictedReadmissionRate]')&#xA;&#xA;set @query3 = 'SELECT p.ProviderId, p.DataYear, ' + @cols3 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_PredictedReadmissionRate'' AS MeasureCodeRename, PredictedReadmissionRate&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmissionReductionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(PredictedReadmissionRate)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols3 + ')&#xA;)p'&#xA;&#xA;SET @cols4 = REPLACE(@cols, ']', '_ExpectedReadmissionRate]')&#xA;&#xA;set @query4 = 'SELECT p.ProviderId, p.DataYear, ' + @cols4 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_ExpectedReadmissionRate'' AS MeasureCodeRename, ExpectedReadmissionRate&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmissionReductionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(ExpectedReadmissionRate)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols4 + ')&#xA;)p'&#xA;&#xA;SET @cols5 = REPLACE(@cols, ']', '_NumberOfReadmissions]')&#xA;&#xA;set @query5 = 'SELECT p.ProviderId, p.DataYear, ' + @cols5 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_NumberOfReadmissions'' AS MeasureCodeRename, NumberOfReadmissions&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmissionReductionScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(NumberOfReadmissions)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols5 + ')&#xA;)p'&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vReadmissionReductionScorePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + ', ' + @cols2 + ', ' + @cols3 + ', ' + @cols4 + ', ' + @cols5 + '&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query2 + ') b ON b.ProviderId = a.ProviderId AND b.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query3 + ') c ON c.ProviderId = a.ProviderId AND c.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query4 + ') d ON d.ProviderId = a.ProviderId AND d.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query5 + ') e ON d.ProviderId = e.ProviderId AND e.DataYear = a.DataYear'&#xA;&#xA;&#xA;&#xA;--select @queryfinal&#xA;execute(@queryFinal)&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Populate ReadmissionReductionScore"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{02D49168-890E-40C2-BEE6-F7D016CED2C9}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Populate ReadmissionReductionScore"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup MeasureId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[Measure]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[Measure]) [refTable]
+where [refTable].[MeasureCode] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="MeasureId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="MeasureCode" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;referenceColumn name="MeasureName" dataType="DT_STR" length="255" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureCode]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Inputs[Lookup Input].Columns[MeasureCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="MeasureCode"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureCode]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">MeasureCode</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      name="MeasureId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">MeasureId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="ReadmissionReductionScore Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[ReadmissionReductionScore]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[ProviderId]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="ProviderId"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ProviderId]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[NumberOfDischarges]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="NumberOfDischarges"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[NumberOfDischarges]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[NumberOfDischarges]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[ExcessReadmissionRatio]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="ExcessReadmissionRatio"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ExcessReadmissionRatio]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ExcessReadmissionRatio]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[PredictedReadmissionRate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="PredictedReadmissionRate"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[PredictedReadmissionRate]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[PredictedReadmissionRate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[ExpectedReadmissionRate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="ExpectedReadmissionRate"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ExpectedReadmissionRate]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ExpectedReadmissionRate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[NumberOfReadmissions]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="NumberOfReadmissions"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[NumberOfReadmissions]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[NumberOfReadmissions]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[MeasureStartDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="MeasureStartDate"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[MeasureEndDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="MeasureEndDate"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].Columns[MeasureId]"
+                      cachedDataType="i4"
+                      cachedName="MeasureId"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      lineageId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[NumberOfDischarges]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NumberOfDischarges" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ExcessReadmissionRatio]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ExcessReadmissionRatio" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[PredictedReadmissionRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="PredictedReadmissionRate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[ExpectedReadmissionRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ExpectedReadmissionRate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[NumberOfReadmissions]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NumberOfReadmissions" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      dataType="i4"
+                      name="MeasureId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="ReadmissionReductionScore Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">DECLARE @FULL TABLE
+(
+	[ProviderId] varchar(10) NOT NULL,
+	[DataYear] int NOT NULL,
+	[NumberOfDischarges] varchar(100),
+	[ExcessReadmissionRatio] varchar(100),
+	[PredictedReadmissionRate] varchar(100),
+	[ExpectedReadmissionRate] varchar(100),	 
+	[NumberOfReadmissions] varchar(100),
+	[MeasureCode] varchar(100),
+	[MeasureStartDate] datetime,
+	[MeasureEndDate] datetime
+)
+INSERT INTO @Full (ProviderId, DataYear, MeasureCode, NumberOfDischarges, ExcessReadmissionRatio, PredictedReadmissionRate, ExpectedReadmissionRate, NumberOfReadmissions, MeasureStartDate, MeasureEndDate)
+SELECT CASE WHEN LEN([Provider Number]) &lt; 6 THEN '0' + [Provider Number] ELSE [Provider Number] END
+	  , 2012 AS DataYear
+      ,CASE 
+		WHEN [Measure Name] = 'Acute Myocardial Infarction (AMI) 30-Day Readmissions' THEN 'READM_30_AMI'
+		WHEN [Measure Name] = 'Heart Failure (HF) 30-Day Readmissions' THEN 'READM_30_HF'
+		WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Readmissions' THEN 'READM_30_PN'
+		ELSE [Measure Name] END AS MeasureCode
+      ,[Number of Discharges]
+      ,[Excess Readmission Ratio]
+      ,[Predicted Readmission Rate]
+      ,[Expected Readmission Rate]
+      ,[Number of Readmissions]
+      ,[Start Date] As MeasureStartDate
+      ,[End Date] As MeasureEndDate
+  FROM [HospitalCompareStage].[dbo].[2012_HQI_READM_REDUCTION]
+UNION
+SELECT CASE WHEN LEN([Provider Number]) &lt; 6 THEN '0' + [Provider Number] ELSE [Provider Number] END
+	  , 2013 AS DataYear
+      ,REPLACE(REPLACE([Measure Name], '-HRRP', ''), '-', '_')
+      ,[Number of Discharges]
+      ,[Excess Readmission Ratio]
+      ,[Predicted Readmission Rate]
+      ,[Expected Readmission Rate]
+      ,[Number of Readmissions]
+      ,[Start Date]
+      ,[End Date]
+  FROM [HospitalCompareStage].[dbo].[2013_HQI_READM_REDUCTION]
+UNION
+SELECT[Provider Number]
+	  , 2014 AS DataYear
+      ,REPLACE(REPLACE([Measure Name], '-HRRP', ''), '-', '_')
+      ,[Number of Discharges]
+      ,[Excess Readmission Ratio]
+      ,[Predicted Readmission Rate]
+      ,[Expected Readmission Rate]
+      ,[Number of Readmissions]
+      ,[Start Date]
+      ,[End Date]
+  FROM [HospitalCompareStage].[dbo].[2014_HQI_READM_REDUCTION]
+UNION
+SELECT [Provider_Number]
+	  , 2015 AS DataYear
+      ,REPLACE(REPLACE([Measure_Name], '-HRRP', ''), '-', '_')
+      ,[Number_of_Discharges]
+      ,[Excess_Readmission_Ratio]
+      ,[Predicted_Readmission_Rate]
+      ,[Expected_Readmission_Rate]
+      ,[Number_of_Readmissions]
+      ,[Start_Date]
+      ,[End_Date]
+  FROM [HospitalCompareStage].[dbo].[2015_HQI_READM_REDUCTION]
+UNION
+SELECT[Provider Number]
+	  , 2016 AS DataYear
+      ,REPLACE(REPLACE([Measure Name], '-HRRP', ''), '-', '_')
+      ,[Number of Discharges]
+      ,[Excess Readmission Ratio]
+      ,[Predicted Readmission Rate]
+      ,[Expected Readmission Rate]
+      ,[Number of Readmissions]
+      ,[Start Date]
+      ,[End Date]
+  FROM [HospitalCompareStage].[dbo].[2016_HQI_READM_REDUCTION]
+
+SELECT f.ProviderId, f.DataYear, f.NumberOfDischarges, f.ExcessReadmissionRatio, f.PredictedReadmissionRate, f.ExpectedReadmissionRate, f.NumberOfReadmissions, f.MeasureCode, f.MeasureStartDate, f.MeasureEndDate FROM @FULL f 
+LEFT JOIN [UNRHealthcareData].dbo.HospitalFactGeneral hf ON hf.ProviderId = f.ProviderId and hf.DataYear = f.DataYear
+WHERE hf.ProviderId is not null 
+order by f.ProviderId, f.DataYear, f.MeasureCode</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      length="10"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      name="ProviderId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[NumberOfDischarges]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[NumberOfDischarges]"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[NumberOfDischarges]"
+                      name="NumberOfDischarges"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ExcessReadmissionRatio]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ExcessReadmissionRatio]"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ExcessReadmissionRatio]"
+                      name="ExcessReadmissionRatio"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[PredictedReadmissionRate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[PredictedReadmissionRate]"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[PredictedReadmissionRate]"
+                      name="PredictedReadmissionRate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ExpectedReadmissionRate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ExpectedReadmissionRate]"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[ExpectedReadmissionRate]"
+                      name="ExpectedReadmissionRate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[NumberOfReadmissions]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[NumberOfReadmissions]"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[NumberOfReadmissions]"
+                      name="NumberOfReadmissions"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      name="MeasureCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[NumberOfDischarges]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NumberOfDischarges" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ExcessReadmissionRatio]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ExcessReadmissionRatio" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[PredictedReadmissionRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="PredictedReadmissionRate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[ExpectedReadmissionRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ExpectedReadmissionRate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[NumberOfReadmissions]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NumberOfReadmissions" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureCode" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      name="ProviderId" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[NumberOfDischarges]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[NumberOfDischarges]"
+                      name="NumberOfDischarges" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ExcessReadmissionRatio]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ExcessReadmissionRatio]"
+                      name="ExcessReadmissionRatio" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[PredictedReadmissionRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[PredictedReadmissionRate]"
+                      name="PredictedReadmissionRate" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ExpectedReadmissionRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ExpectedReadmissionRate]"
+                      name="ExpectedReadmissionRate" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[NumberOfReadmissions]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[NumberOfReadmissions]"
+                      name="NumberOfReadmissions" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      name="MeasureCode" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Populate ReadmissionReductionScore.Paths[Lookup Match Output]"
+              endId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination.Inputs[OLE DB Destination Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate ReadmissionReductionScore.Paths[OLE DB Source Output]"
+              endId="Package\Populate ReadmissionReductionScore\Lookup MeasureId.Inputs[Lookup Input]"
+              name="OLE DB Source Output"
+              startId="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{BFEF0592-F0D2-45D8-9F7C-31F8B550F6A6}"
+      DTS:From="Package\Populate ReadmissionReductionScore"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\CREATE vReadmissionReductionScorePivot" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="282,42"
+          Id="Package\CREATE vReadmissionReductionScorePivot"
+          TopLeft="166,184" />
+        <NodeLayout
+          Size="257,42"
+          Id="Package\Populate ReadmissionReductionScore"
+          TopLeft="99,71" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="227.5,113">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="79.5,71"
+              Start="0,0"
+              End="79.5,63.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,31.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,31.5"
+                    Point2="0,35.5"
+                    Point3="4,35.5" />
+                  <mssgle:LineSegment
+                    End="75.5,35.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="75.5,35.5"
+                    Point2="79.5,35.5"
+                    Point3="79.5,39.5" />
+                  <mssgle:LineSegment
+                    End="79.5,63.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Populate ReadmissionReductionScore">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="269,42"
+          Id="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination"
+          TopLeft="163,332" />
+        <NodeLayout
+          Size="168,42"
+          Id="Package\Populate ReadmissionReductionScore\Lookup MeasureId"
+          TopLeft="173,199" />
+        <NodeLayout
+          Size="248,42"
+          Id="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source"
+          TopLeft="106,75" />
+        <EdgeLayout
+          Id="Package\Populate ReadmissionReductionScore.Paths[OLE DB Source Output]"
+          TopLeft="230,117">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="27,82"
+              Start="0,0"
+              End="27,74.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,37" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,37"
+                    Point2="0,41"
+                    Point3="4,41" />
+                  <mssgle:LineSegment
+                    End="23,41" />
+                  <mssgle:CubicBezierSegment
+                    Point1="23,41"
+                    Point2="27,41"
+                    Point3="27,45" />
+                  <mssgle:LineSegment
+                    End="27,74.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate ReadmissionReductionScore.Paths[Lookup Match Output]"
+          TopLeft="257,241">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="40.5,91"
+              Start="0,0"
+              End="40.5,83.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,41.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,41.5"
+                    Point2="0,45.5"
+                    Point3="4,45.5" />
+                  <mssgle:LineSegment
+                    End="36.5,45.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="36.5,45.5"
+                    Point2="40.5,45.5"
+                    Point3="40.5,49.5" />
+                  <mssgle:LineSegment
+                    End="40.5,83.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-27.94138671875,50.5,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate ReadmissionReductionScore\Lookup MeasureId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[Measure]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate ReadmissionReductionScore\ReadmissionReductionScore Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

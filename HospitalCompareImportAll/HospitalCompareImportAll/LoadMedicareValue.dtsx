@@ -1,0 +1,1433 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/14/2017 11:00:15 AM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{0A04138B-D7E9-49D0-906F-03092614B1CF}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadMedicareValue"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="12"
+  DTS:VersionGUID="{085B2336-29D9-445C-9057-1A4EBD64ECDE}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\CREATE vMedicareValuePivot"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{8B7506A6-2997-41E6-AF8B-04264AC3FDB9}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="CREATE vMedicareValuePivot"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vMedicareValuePivot', 'V') IS NOT NULL&#xA;DROP VIEW vMedicareValuePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME(mis.[DRGCodeId]) &#xA;                    FROM [UNRHealthcareData].[dbo].[MedicareValue] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[DRGCode] m on m.DRGCodeId = mis.DRGCodeId&#xA;                    group by mis.[DRGCodeId]&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;SET @cols1 = REPLACE(@cols, '[', '[DRGId_')&#xA;SET @cols1 = REPLACE(@cols1, ']', '_AveragePayment]')&#xA;&#xA;--select @cols1&#xA;&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''DRGId_'' + CAST(mis.DRGCodeId AS nvarchar) + ''_AveragePayment'' AS DRGCodeIdRename, AveragePayment&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[MedicareValue] mis&#x9;&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[DRGCode] m on m.DRGCodeId = mis.DRGCodeId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(AveragePayment)&#xA;&#x9;FOR DRGCodeIdRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;SET @cols2 = REPLACE(@cols, '[', '[DRGId_')&#xA;SET @cols2 = REPLACE(@cols2, ']', '_Denominator]')&#xA;&#xA;--select @cols2&#xA;&#xA;&#xA;set @query2 = 'SELECT p.ProviderId, p.DataYear, ' + @cols2 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''DRGId_'' + CAST(mis.DRGCodeId AS nvarchar) + ''_Denominator'' AS DRGCodeIdRename, Denominator&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[MedicareValue] mis&#x9;&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[DRGCode] m on m.DRGCodeId = mis.DRGCodeId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(Denominator)&#xA;&#x9;FOR DRGCodeIdRename IN (' + @cols2 + ')&#xA;)p'&#xA;&#xA;--select @query2&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vMedicareValuePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + ', ' + @cols2 + ' &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;LEFT JOIN (' + @query2 + ') b ON b.ProviderId = a.ProviderId AND b.DataYear = a.DataYear'&#xA;&#xA;--select @queryfinal&#xA;execute(@queryFinal)&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Populate Child Entities"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{D70E62F2-B3F5-4A3C-A1B9-C6FAC69F3AA2}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Populate Child Entities"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Populate Child Entities\Data Conversion"
+              componentClassID="Microsoft.DataConvert"
+              contactInfo="Data Conversion;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Data Conversion"
+              name="Data Conversion"
+              usesDispositions="true">
+              <inputs>
+                <input
+                  refId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input]"
+                  name="Data Conversion Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input].Columns[ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="text"
+                      cachedName="ProviderID"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input].Columns[DRGId]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="50"
+                      cachedName="DRGId"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[DRGId]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input].Columns[Denominator]"
+                      cachedCodepage="1252"
+                      cachedDataType="text"
+                      cachedName="Denominator"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[Denominator]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input].Columns[MeasureStartDate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="MeasureStartDate"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input].Columns[MeasureEndDate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="MeasureEndDate"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]" />
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output]"
+                  exclusionGroup="1"
+                  name="Data Conversion Output"
+                  synchronousInputId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="10"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]"
+                      name="Copy of ProviderID"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[ProviderID]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of DRGId]"
+                      dataType="ui4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of DRGId]"
+                      name="Copy of DRGId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[DRGId]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Denominator]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="100"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Denominator]"
+                      name="Copy of Denominator"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[Denominator]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]"
+                      name="Copy of MeasureStartDate"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]"
+                      name="Copy of MeasureEndDate"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Data Conversion Error Output"
+                  synchronousInputId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Child Entities\Medicare Value Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="Medicare Value Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[MedicareValue]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Child Entities\Medicare Value Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].Columns[AveragePayment]"
+                      cachedDataType="i4"
+                      cachedName="AveragePayment"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[AveragePayment]"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[AveragePayment]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].Columns[Copy of ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="Copy of ProviderID"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].Columns[Copy of Denominator]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Copy of Denominator"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[Denominator]"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Denominator]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].Columns[Copy of MeasureStartDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Copy of MeasureStartDate"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].Columns[Copy of MeasureEndDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Copy of MeasureEndDate"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]" />
+                    <inputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].Columns[Copy of DRGId]"
+                      cachedDataType="ui4"
+                      cachedName="Copy of DRGId"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[DRGCodeId]"
+                      lineageId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of DRGId]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[AveragePayment]"
+                      dataType="i4"
+                      name="AveragePayment" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[Denominator]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Denominator" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[DRGCodeId]"
+                      dataType="i4"
+                      name="DRGCodeId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Child Entities\Medicare Value Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Child Entities\Medicare Value Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Child Entities\Medicare Value Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Child Entities\Medicare Value Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="Medicare Value Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">SELECT [Provider Number] AS ProviderID
+	  , 2009 AS DataYear
+	  ,[MS-DRG ID] AS DRGId
+	  ,[Medicare Median Payment] AS AveragePayment
+	  ,CASE WHEN [Number Of Cases] = '*' THEN null else [Number Of Cases] end AS Denominator
+	  ,null AS MeasureStartDate
+	  ,null AS MeasureEndDate
+FROM [HospitalCompareStage].[dbo].[2009_HQI_HOSP_MPV_MSR]
+UNION
+SELECT SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2010 AS DataYear
+	  ,[Diagnosis Related Group ID]
+	  ,[Medicare Average Payment] AS AveragePayment
+	  ,CASE WHEN [Number Of Cases] = '*' THEN null else [Number Of Cases] end AS Denominator
+	  ,null AS MeasureStartDate
+	  ,null AS MeasureEndDate
+FROM [HospitalCompareStage].[dbo].[2010_HQI_HOSP_MPV_MSR]
+UNION
+SELECT SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2011 AS DataYear
+	  ,[Diagnosis Related Group ID]
+	  ,[Medicare Average Payment] AS AveragePayment
+	  ,CASE WHEN [Number Of Cases] = '*' THEN null else [Number Of Cases] end AS Denominator
+	  ,null AS MeasureStartDate
+	  ,null AS MeasureEndDate
+FROM [HospitalCompareStage].[dbo].[2011_HQI_HOSP_MPV_MSR]
+UNION
+SELECT SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2012 AS DataYear
+	  ,[Diagnosis Related Group ID]
+	  ,null AS AveragePayment
+	  ,CASE WHEN [Number Of Cases] = '*' THEN null else [Number Of Cases] end AS Denominator
+	  ,null AS MeasureStartDate
+	  ,null AS MeasureEndDate
+FROM [HospitalCompareStage].[dbo].[2012_HQI_HOSP_MPV_MSR]
+UNION
+SELECT [Provider Number]
+	  , 2013 AS DataYear
+	  ,[Diagnosis Related Group ID]
+	  ,null AS AveragePayment
+	  ,CASE WHEN [Number Of Cases] = '*' THEN null else [Number Of Cases] end AS Denominator
+	  ,null AS MeasureStartDate
+	  ,null AS MeasureEndDate
+FROM [HospitalCompareStage].[dbo].[2013_HQI_HOSP_MPV_MSR]
+UNION
+SELECT [Provider ID]
+	  , 2014 AS DataYear 
+	  , [Diagnosis Related Group ID]
+	  ,null AS AveragePayment
+	  ,CASE WHEN [Denominator] = '*' THEN null else [Denominator] end AS Denominator
+	  ,[Measure Start Date] AS MeasureStartDate
+	  ,[Measure End Date] AS MeasureEndDate
+FROM [HospitalCompareStage].[dbo].[2014_HQI_HOSP_MV]
+ORDER BY ProviderId, DataYear, DRGId</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Child Entities\Medicare Value Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderID]"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[ProviderID]"
+                      name="ProviderID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[DRGId]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[DRGId]"
+                      length="50"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[DRGId]"
+                      name="DRGId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[AveragePayment]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[AveragePayment]"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[AveragePayment]"
+                      name="AveragePayment"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[Denominator]"
+                      codePage="1252"
+                      dataType="text"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[Denominator]"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[Denominator]"
+                      name="Denominator"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      length="10"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      length="10"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      name="ProviderID" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[DRGId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
+                      name="DRGId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[AveragePayment]"
+                      dataType="i4"
+                      name="AveragePayment" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[Denominator]"
+                      codePage="1252"
+                      dataType="text"
+                      name="Denominator" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[ProviderID]"
+                      name="ProviderID" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[DRGId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[DRGId]"
+                      name="DRGId" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[AveragePayment]"
+                      dataType="i4"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[AveragePayment]"
+                      name="AveragePayment" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[Denominator]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[Denominator]"
+                      name="Denominator" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Populate Child Entities.Paths[Data Conversion Output]"
+              endId="Package\Populate Child Entities\Medicare Value Destination.Inputs[OLE DB Destination Input]"
+              name="Data Conversion Output"
+              startId="Package\Populate Child Entities\Data Conversion.Outputs[Data Conversion Output]" />
+            <path
+              refId="Package\Populate Child Entities.Paths[OLE DB Source Output]"
+              endId="Package\Populate Child Entities\Data Conversion.Inputs[Data Conversion Input]"
+              name="OLE DB Source Output"
+              startId="Package\Populate Child Entities\Medicare Value Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Populate Parent Entities"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{4C2A321F-67EA-4DAE-B600-4947CEC7B293}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Populate Parent Entities"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Populate Parent Entities\Data Conversion"
+              componentClassID="Microsoft.DataConvert"
+              contactInfo="Data Conversion;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Data Conversion"
+              name="Data Conversion"
+              usesDispositions="true">
+              <inputs>
+                <input
+                  refId="Package\Populate Parent Entities\Data Conversion.Inputs[Data Conversion Input]"
+                  name="Data Conversion Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Parent Entities\Data Conversion.Inputs[Data Conversion Input].Columns[Diagnosis Related Group Name]"
+                      cachedCodepage="1252"
+                      cachedDataType="text"
+                      cachedName="Diagnosis Related Group Name"
+                      lineageId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].Columns[Diagnosis Related Group Name]" />
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Output]"
+                  exclusionGroup="1"
+                  name="Data Conversion Output"
+                  synchronousInputId="Package\Populate Parent Entities\Data Conversion.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Diagnosis Related Group Name]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="100"
+                      lineageId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Diagnosis Related Group Name]"
+                      name="Copy of Diagnosis Related Group Name"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].Columns[Diagnosis Related Group Name]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Data Conversion Error Output"
+                  synchronousInputId="Package\Populate Parent Entities\Data Conversion.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Parent Entities\DRG Code Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="DRG Code Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">DECLARE @DRGId TABLE (
+	DRGID int
+)
+INSERT INTO @DRGId
+SELECT [MS-DRG ID] AS DRGId
+FROM [HospitalCompareStage].[dbo].[2009_HQI_HOSP_MPV_MSR]
+UNION
+SELECT [Diagnosis Related Group ID]
+FROM [HospitalCompareStage].[dbo].[2010_HQI_HOSP_MPV_MSR]
+UNION
+SELECT [Diagnosis Related Group ID]
+FROM [HospitalCompareStage].[dbo].[2011_HQI_HOSP_MPV_MSR]
+UNION
+SELECT [Diagnosis Related Group ID]
+FROM [HospitalCompareStage].[dbo].[2012_HQI_HOSP_MPV_MSR]
+UNION
+SELECT [Diagnosis Related Group ID]
+FROM [HospitalCompareStage].[dbo].[2013_HQI_HOSP_MPV_MSR]
+UNION
+SELECT [Diagnosis Related Group ID]
+FROM [HospitalCompareStage].[dbo].[2014_HQI_HOSP_MV]
+ORDER BY DRGId
+
+SELECT DISTINCT a.DRGID, [Diagnosis Related Group Name] FROM @DRGId a LEFT JOIN [HospitalCompareStage].[dbo].[2014_HQI_HOSP_MV] b ON b.[Diagnosis Related Group ID] = a.DRGID</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Parent Entities\DRG Code Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].Columns[DRGID]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].ExternalColumns[DRGID]"
+                      lineageId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].Columns[DRGID]"
+                      name="DRGID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].Columns[Diagnosis Related Group Name]"
+                      codePage="1252"
+                      dataType="text"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].ExternalColumns[Diagnosis Related Group Name]"
+                      lineageId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].Columns[Diagnosis Related Group Name]"
+                      name="Diagnosis Related Group Name"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].ExternalColumns[DRGID]"
+                      dataType="i4"
+                      name="DRGID" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].ExternalColumns[Diagnosis Related Group Name]"
+                      codePage="1252"
+                      dataType="text"
+                      name="Diagnosis Related Group Name" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output].Columns[DRGID]"
+                      dataType="i4"
+                      lineageId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output].Columns[DRGID]"
+                      name="DRGID" />
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output].Columns[Diagnosis Related Group Name]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output].Columns[Diagnosis Related Group Name]"
+                      name="Diagnosis Related Group Name" />
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Parent Entities\OLE DB Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="OLE DB Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[DRGCode]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Parent Entities\OLE DB Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[DRGID]"
+                      cachedDataType="i4"
+                      cachedName="DRGID"
+                      externalMetadataColumnId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[DRGCodeId]"
+                      lineageId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output].Columns[DRGID]" />
+                    <inputColumn
+                      refId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[Copy of Diagnosis Related Group Name]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Copy of Diagnosis Related Group Name"
+                      externalMetadataColumnId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[Name]"
+                      lineageId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Diagnosis Related Group Name]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[DRGCodeId]"
+                      dataType="i4"
+                      name="DRGCodeId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[Name]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Name" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Parent Entities\OLE DB Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Parent Entities\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Parent Entities\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Parent Entities\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Populate Parent Entities.Paths[Data Conversion Output]"
+              endId="Package\Populate Parent Entities\OLE DB Destination.Inputs[OLE DB Destination Input]"
+              name="Data Conversion Output"
+              startId="Package\Populate Parent Entities\Data Conversion.Outputs[Data Conversion Output]" />
+            <path
+              refId="Package\Populate Parent Entities.Paths[OLE DB Source Output]"
+              endId="Package\Populate Parent Entities\Data Conversion.Inputs[Data Conversion Input]"
+              name="OLE DB Source Output"
+              startId="Package\Populate Parent Entities\DRG Code Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{488561C7-8157-4432-80E4-3C871C800687}"
+      DTS:From="Package\Populate Child Entities"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\CREATE vMedicareValuePivot" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 1]"
+      DTS:CreationName=""
+      DTS:DTSID="{CAA8D21D-173A-416F-9CFB-688BDCE7FEF9}"
+      DTS:From="Package\Populate Parent Entities"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 1"
+      DTS:To="Package\Populate Child Entities" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="165,42"
+          Id="Package\CREATE vMedicareValuePivot"
+          TopLeft="222,401" />
+        <NodeLayout
+          Size="186,42"
+          Id="Package\Populate Child Entities"
+          TopLeft="194,292" />
+        <NodeLayout
+          Size="193,42"
+          Id="Package\Populate Parent Entities"
+          TopLeft="174,183" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="287,334">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="17.5,67"
+              Start="0,0"
+              End="17.5,59.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,29.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,29.5"
+                    Point2="0,33.5"
+                    Point3="4,33.5" />
+                  <mssgle:LineSegment
+                    End="13.5,33.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="13.5,33.5"
+                    Point2="17.5,33.5"
+                    Point3="17.5,37.5" />
+                  <mssgle:LineSegment
+                    End="17.5,59.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 1]"
+          TopLeft="270.5,225">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="16.5,67"
+              Start="0,0"
+              End="16.5,59.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,29.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,29.5"
+                    Point2="0,33.5"
+                    Point3="4,33.5" />
+                  <mssgle:LineSegment
+                    End="12.5,33.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="12.5,33.5"
+                    Point2="16.5,33.5"
+                    Point3="16.5,37.5" />
+                  <mssgle:LineSegment
+                    End="16.5,59.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Populate Child Entities">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="188,42"
+          Id="Package\Populate Child Entities\Medicare Value Source"
+          TopLeft="71,83" />
+        <NodeLayout
+          Size="158,42"
+          Id="Package\Populate Child Entities\Data Conversion"
+          TopLeft="105,187" />
+        <NodeLayout
+          Size="209,42"
+          Id="Package\Populate Child Entities\Medicare Value Destination"
+          TopLeft="120,322" />
+        <EdgeLayout
+          Id="Package\Populate Child Entities.Paths[OLE DB Source Output]"
+          TopLeft="165,125">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="19,62"
+              Start="0,0"
+              End="19,54.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,27" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,27"
+                    Point2="0,31"
+                    Point3="4,31" />
+                  <mssgle:LineSegment
+                    End="15,31" />
+                  <mssgle:CubicBezierSegment
+                    Point1="15,31"
+                    Point2="19,31"
+                    Point3="19,35" />
+                  <mssgle:LineSegment
+                    End="19,54.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate Child Entities.Paths[Data Conversion Output]"
+          TopLeft="184,229">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="40.5,93"
+              Start="0,0"
+              End="40.5,85.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,42.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,42.5"
+                    Point2="0,46.5"
+                    Point3="4,46.5" />
+                  <mssgle:LineSegment
+                    End="36.5,46.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="36.5,46.5"
+                    Point2="40.5,46.5"
+                    Point3="40.5,50.5" />
+                  <mssgle:LineSegment
+                    End="40.5,85.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Child Entities\Medicare Value Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Child Entities\Medicare Value Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <TaskHost
+    design-time-name="Package\Populate Parent Entities">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="173,42"
+          Id="Package\Populate Parent Entities\OLE DB Destination"
+          TopLeft="133,329" />
+        <NodeLayout
+          Size="164,42"
+          Id="Package\Populate Parent Entities\DRG Code Source"
+          TopLeft="116.5,92.5" />
+        <NodeLayout
+          Size="158,42"
+          Id="Package\Populate Parent Entities\Data Conversion"
+          TopLeft="127,191" />
+        <EdgeLayout
+          Id="Package\Populate Parent Entities.Paths[OLE DB Source Output]"
+          TopLeft="202.25,134.5">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,56.5"
+              Start="0,0"
+              End="0,49">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,49" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate Parent Entities.Paths[Data Conversion Output]"
+          TopLeft="206,233">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="13.5,96"
+              Start="0,0"
+              End="13.5,88.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,44" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,44"
+                    Point2="0,48"
+                    Point3="4,48" />
+                  <mssgle:LineSegment
+                    End="9.5,48" />
+                  <mssgle:CubicBezierSegment
+                    Point1="9.5,48"
+                    Point2="13.5,48"
+                    Point3="13.5,52" />
+                  <mssgle:LineSegment
+                    End="13.5,88.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Parent Entities\OLE DB Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Parent Entities\DRG Code Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

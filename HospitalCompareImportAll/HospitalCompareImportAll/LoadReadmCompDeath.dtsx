@@ -1,0 +1,2586 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/12/2017 6:00:56 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{0D4033CB-84C6-4BF2-8F0F-6DED5336CCF1}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadReadmCompDeath"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="36"
+  DTS:VersionGUID="{D19CFE29-1AE8-4261-9EFA-880E4D8A3F0D}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\CREATE vReadmCompDeathScore"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{7EDEBD62-6F09-451F-A2D7-85A52FDCBD07}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="CREATE vReadmCompDeathScore"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @cols3 AS NVARCHAR(MAX)&#xA;, @cols4 AS NVARCHAR(MAX)&#xA;, @cols5 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @query3 AS NVARCHAR(MAX)&#xA;, @query4 AS NVARCHAR(MAX)&#xA;, @query5 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vReadmCompDeathScorePivot', 'V') IS NOT NULL&#xA;DROP VIEW vReadmCompDeathScorePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME([MeasureCode]) &#xA;                    FROM [UNRHealthcareData].[dbo].[ReadmCompDeathScore] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;                    group by [MeasureCode]&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;SET @cols1 = REPLACE(@cols, ']', '_Score]')&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_Score'' AS MeasureCodeRename, Score&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmCompDeathScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(Score)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;SET @cols2 = REPLACE(@cols, ']', '_LowerEstimate]')&#xA;&#xA;set @query2 = 'SELECT p.ProviderId, p.DataYear, ' + @cols2 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_LowerEstimate'' AS MeasureCodeRename, LowerEstimate&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmCompDeathScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(LowerEstimate)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols2 + ')&#xA;)p'&#xA;&#xA;SET @cols3 = REPLACE(@cols, ']', '_HigherEstimate]')&#xA;&#xA;set @query3 = 'SELECT p.ProviderId, p.DataYear, ' + @cols3 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_HigherEstimate'' AS MeasureCodeRename, HigherEstimate&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmCompDeathScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(HigherEstimate)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols3 + ')&#xA;)p'&#xA;&#xA;SET @cols4 = REPLACE(@cols, ']', '_Denominator]')&#xA;&#xA;set @query4 = 'SELECT p.ProviderId, p.DataYear, ' + @cols4 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_Denominator'' AS MeasureCodeRename, Denominator&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmCompDeathScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(Denominator)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols4 + ')&#xA;)p'&#xA;&#xA;SET @cols5 = REPLACE(@cols, ']', '_NationalComparisonCategory]')&#xA;&#xA;set @query5 = 'SELECT p.ProviderId, p.DataYear, ' + @cols5 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, MeasureCode + ''_NationalComparisonCategory'' AS MeasureCodeRename, Category AS NationalComparisonCategory&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[ReadmCompDeathScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[NationalComparisonCategory] c on c.NationalComparisonCategoryId = mis.NationalComparisonCategoryId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(NationalComparisonCategory)&#xA;&#x9;FOR MeasureCodeRename IN (' + @cols5 + ')&#xA;)p'&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vReadmCompDeathScorePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + ', ' + @cols2 + ', ' + @cols3 + ', ' + @cols4 + ', ' + @cols5 + '&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query2 + ') b ON b.ProviderId = a.ProviderId AND b.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query3 + ') c ON c.ProviderId = a.ProviderId AND c.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query4 + ') d ON d.ProviderId = a.ProviderId AND d.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query5 + ') e ON d.ProviderId = e.ProviderId AND e.DataYear = a.DataYear'&#xA;&#xA;&#xA;&#xA;--select @queryfinal&#xA;execute(@queryFinal)&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Populate ReadmCompDeathScores"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{926A77CA-7BCD-4C2F-A263-94343E4410AF}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Populate ReadmCompDeathScores"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Populate ReadmCompDeathScores\Data Conversion"
+              componentClassID="Microsoft.DataConvert"
+              contactInfo="Data Conversion;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Data Conversion"
+              name="Data Conversion"
+              usesDispositions="true">
+              <inputs>
+                <input
+                  refId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input]"
+                  name="Data Conversion Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input].Columns[ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="text"
+                      cachedName="ProviderID"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input].Columns[MeasureName]"
+                      cachedCodepage="1252"
+                      cachedDataType="text"
+                      cachedName="MeasureName"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureName]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input].Columns[Category]"
+                      cachedCodepage="1252"
+                      cachedDataType="text"
+                      cachedName="Category"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Category]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input].Columns[MeasureStartDate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="MeasureStartDate"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input].Columns[MeasureEndDate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="MeasureEndDate"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]" />
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output]"
+                  exclusionGroup="1"
+                  name="Data Conversion Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="10"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]"
+                      name="Copy of ProviderID"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[ProviderID]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureName]"
+                      name="Copy of MeasureName"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureName]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Category]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Category]"
+                      name="Copy of Category"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Category]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]"
+                      name="Copy of MeasureStartDate"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]"
+                      name="Copy of MeasureEndDate"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.Int32"
+                          description="Specifies the input column used as the source of data for the conversion."
+                          name="SourceInputColumnLineageID">#{Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]}</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                          name="FastParse">false</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Data Conversion Error Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate ReadmCompDeathScores\Derive Package Name"
+              componentClassID="Microsoft.DerivedColumn"
+              contactInfo="Derived Column;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Creates new column values by applying expressions to transformation input columns. Create new columns or overwrite existing ones. For example, concatenate the values from the 'first name' and 'last name' column to make a 'full name' column."
+              name="Derive Package Name"
+              usesDispositions="true">
+              <inputs>
+                <input
+                  refId="Package\Populate ReadmCompDeathScores\Derive Package Name.Inputs[Derived Column Input]"
+                  description="Input to the Derived Column Transformation"
+                  name="Derived Column Input">
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Output]"
+                  description="Default Output of the Derived Column Transformation"
+                  exclusionGroup="1"
+                  name="Derived Column Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Derive Package Name.Inputs[Derived Column Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Output].Columns[PackageName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Computation"
+                      errorRowDisposition="FailComponent"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Output].Columns[PackageName]"
+                      name="PackageName"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Derived Column Expression"
+                          name="Expression">@[System::PackageName]</property>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Derived Column Friendly Expression"
+                          expressionType="Notify"
+                          name="FriendlyExpression">@[System::PackageName]</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Error Output]"
+                  description="Error Output of the Derived Column Transformation"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Derived Column Error Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Derive Package Name.Inputs[Derived Column Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup MeasureCode"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[Measure]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[Measure]) [refTable]
+where [refTable].[MeasureCode] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="MeasureId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="MeasureCode" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;referenceColumn name="MeasureName" dataType="DT_STR" length="255" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureCode]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Inputs[Lookup Input].Columns[MeasureCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="255"
+                      cachedName="MeasureCode"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureCode]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">MeasureCode</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      name="MeasureId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">MeasureId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup Nat Comparison Category"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[NationalComparisonCategory]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[NationalComparisonCategory]) [refTable]
+where [refTable].[Category] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="NationalComparisonCategoryId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="Category" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Category]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Inputs[Lookup Input].Columns[Copy of Category]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Copy of Category"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Category]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">Category</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="RedirectRow"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Match Output].Columns[NationalComparisonCategoryId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Match Output].Columns[NationalComparisonCategoryId]"
+                      name="NationalComparisonCategoryId"
+                      truncationRowDisposition="RedirectRow">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">NationalComparisonCategoryId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="NationalComparisonCategory Failure Rows"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[NationalComparisonCategoryLookupErrors]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[ErrorCode]"
+                      cachedDataType="i4"
+                      cachedName="ErrorCode"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ErrorCode]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Error Output].Columns[ErrorCode]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[ErrorColumn]"
+                      cachedDataType="i4"
+                      cachedName="ErrorColumn"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ErrorColumn]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Error Output].Columns[ErrorColumn]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[Copy of Category]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Copy of Category"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[NationalComparisonCategory]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of Category]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[Copy of ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="Copy of ProviderID"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ProviderID]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].Columns[PackageName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="PackageName"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[PackageName]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Output].Columns[PackageName]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ProviderID]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderID" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[NationalComparisonCategory]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="NationalComparisonCategory" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ErrorCode]"
+                      dataType="i4"
+                      name="ErrorCode" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[ErrorColumn]"
+                      dataType="i4"
+                      name="ErrorColumn" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input].ExternalColumns[PackageName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="PackageName" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate ReadmCompDeathScores\OLE DB Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="OLE DB Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[ReadmCompDeathScore]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[Score]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Score"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[Score]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Score]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[LowerEstimate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="LowerEstimate"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[LowerEstimate]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[LowerEstimate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[HigherEstimate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="HigherEstimate"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[HigherEstimate]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[HigherEstimate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[Denominator]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="Denominator"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[Denominator]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Denominator]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[NationalComparisonCategoryId]"
+                      cachedDataType="i4"
+                      cachedName="NationalComparisonCategoryId"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[NationalComparisonCategoryId]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Match Output].Columns[NationalComparisonCategoryId]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[Copy of MeasureEndDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Copy of MeasureEndDate"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureEndDate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[Copy of MeasureStartDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Copy of MeasureStartDate"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[Copy of ProviderID]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="Copy of ProviderID"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of ProviderID]" />
+                    <inputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[MeasureId]"
+                      cachedDataType="i4"
+                      cachedName="MeasureId"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      lineageId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Match Output].Columns[MeasureId]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[Score]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Score" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[LowerEstimate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="LowerEstimate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[HigherEstimate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="HigherEstimate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[Denominator]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Denominator" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[NationalComparisonCategoryId]"
+                      dataType="i4"
+                      name="NationalComparisonCategoryId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      dataType="i4"
+                      name="MeasureId" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="ReadmCompDeath Score Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">--BUILD TEMPORARY TABLES FOR OTHER SOURCES
+--2011
+declare @Base2011 Table 
+(
+ProviderID varchar(10),
+MeasureCode varchar(100),
+FieldValue varchar(100)
+)
+
+declare @Full2011 Table 
+(
+ProviderID varchar(10),
+DataYear int,
+Score varchar(100),
+LowerEstimate varchar(100),
+HigherEstimate varchar(100),
+Denominator varchar(100),
+MeasureCode varchar(100),
+MeasureName varchar(255),
+NationalComparisonCategory varchar(100),
+MeasureStartDate varchar(100),
+MeasureEndDate varchar(100)
+)
+
+INSERT INTO @Base2011
+SELECT [Prvdr_id] as ProviderId, REPLACE(MeasureCode, '__', '_') AS MeasureCode, FieldValue
+FROM 
+   (SELECT [Prvdr_id], [PSI_4_SURG_COMP]
+      ,[PSI_4_SURG_COMP_F]
+      ,[PSI_6_IAT_PTX]
+      ,[PSI_6_IAT_PTX_F]
+      ,[PSI_11_POSTOP_RESPFAIL]
+      ,[PSI_11_POSTOP_RESPFAIL_F]
+      ,[PSI_12_POSTOP_PULMEMB_DVT]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_F]
+      ,[PSI_14_POSTOP_DEHIS]
+      ,[PSI_14_POSTOP_DEHIS_F]
+      ,[PSI_15_ACC_LAC]
+      ,[PSI_15_ACC_LAC_F]
+      ,[PSI_90_SAFETY]
+      ,[PSI_90_SAFETY_F]
+      ,[IQI_11_AAA]
+      ,[IQI_11_AAA_F]
+      ,[IQI_19_HIP_FX]
+      ,[IQI_19_HIP_FX_F]
+      ,[IQI_91_CONDS]
+      ,[IQI_91_CONDS_F]
+      ,[PSI_4_SURG_COMP_NUM_DC]
+      ,[PSI_4_SURG_COMP_RATE]
+      ,[PSI_4_SURG_COMP_LOW_EST]
+      ,[PSI_4_SURG_COMP_HIGH_EST]
+      ,[PSI_6_IAT_PTX_NUM_DC]
+      ,[PSI_6_IAT_PTX_RATE]
+      ,[PSI_6_IAT_PTX_LOW_EST]
+      ,[PSI_6_IAT_PTX_HIGH_EST]
+      ,[PSI_11_POSTOP_RESPFAIL_NUM_DC]
+      ,[PSI_11_POSTOP_RESPFAIL__RATE]
+      ,[PSI_11_POSTOP_RESPFAIL_LOW_EST]
+      ,[PSI_11_POSTOP_RESPFAIL_HIGH_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_NUM_DC]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_RATE]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_LOW_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_HIGH_EST]
+      ,[PSI_14_POSTOP_DEHIS_NUM_DC]
+      ,[PSI_14_POSTOP_DEHIS_RATE]
+      ,[PSI_14_POSTOP_DEHIS_LOW_EST]
+      ,[PSI_14_POSTOP_DEHIS_HIGH_EST]
+      ,[PSI_15_ACC_LAC_NUM_DC]
+      ,[PSI_15_ACC_LAC_RATE]
+      ,[PSI_15_ACC_LAC_LOW_EST]
+      ,[PSI_15_ACC_LAC_HIGH_EST]
+      ,[PSI_90_SAFETY_NUM_DC]
+      ,[PSI_90_SAFETY_RATE]
+      ,[PSI_90_SAFETY_LOW_EST]
+      ,[PSI_90_SAFETY_HIGH_EST]
+      ,[IQI_11_AAA_NUM_DC]
+      ,[IQI_11_AAA_RATE]
+      ,[IQI_11_AAA_LOW_EST]
+      ,[IQI_11_AAA_HIGH_EST]
+      ,[IQI_19_HIP_FX_NUM_DC]
+      ,[IQI_19_HIP_FX_RATE]
+      ,[IQI_19_HIP_FX_LOW_EST]
+      ,[IQI_19_HIP_FX_HIGH_EST]
+      ,[IQI_91_CONDS_NUM_DC]
+      ,[IQI_91_CONDS_RATE]
+      ,[IQI_91_CONDS_LOW_EST]
+      ,[IQI_91_CONDS_HIGH_EST]
+   FROM [HospitalCompareStage].[dbo].[2011_HQI_HOSP_AHRQ]) p
+UNPIVOT
+   (FieldValue FOR MeasureCode IN 
+      ([PSI_4_SURG_COMP]
+      ,[PSI_4_SURG_COMP_F]
+      ,[PSI_6_IAT_PTX]
+      ,[PSI_6_IAT_PTX_F]
+      ,[PSI_11_POSTOP_RESPFAIL]
+      ,[PSI_11_POSTOP_RESPFAIL_F]
+      ,[PSI_12_POSTOP_PULMEMB_DVT]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_F]
+      ,[PSI_14_POSTOP_DEHIS]
+      ,[PSI_14_POSTOP_DEHIS_F]
+      ,[PSI_15_ACC_LAC]
+      ,[PSI_15_ACC_LAC_F]
+      ,[PSI_90_SAFETY]
+      ,[PSI_90_SAFETY_F]
+      ,[IQI_11_AAA]
+      ,[IQI_11_AAA_F]
+      ,[IQI_19_HIP_FX]
+      ,[IQI_19_HIP_FX_F]
+      ,[IQI_91_CONDS]
+      ,[IQI_91_CONDS_F]
+      ,[PSI_4_SURG_COMP_NUM_DC]
+      ,[PSI_4_SURG_COMP_RATE]
+      ,[PSI_4_SURG_COMP_LOW_EST]
+      ,[PSI_4_SURG_COMP_HIGH_EST]
+      ,[PSI_6_IAT_PTX_NUM_DC]
+      ,[PSI_6_IAT_PTX_RATE]
+      ,[PSI_6_IAT_PTX_LOW_EST]
+      ,[PSI_6_IAT_PTX_HIGH_EST]
+      ,[PSI_11_POSTOP_RESPFAIL_NUM_DC]
+      ,[PSI_11_POSTOP_RESPFAIL__RATE]
+      ,[PSI_11_POSTOP_RESPFAIL_LOW_EST]
+      ,[PSI_11_POSTOP_RESPFAIL_HIGH_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_NUM_DC]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_RATE]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_LOW_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_HIGH_EST]
+      ,[PSI_14_POSTOP_DEHIS_NUM_DC]
+      ,[PSI_14_POSTOP_DEHIS_RATE]
+      ,[PSI_14_POSTOP_DEHIS_LOW_EST]
+      ,[PSI_14_POSTOP_DEHIS_HIGH_EST]
+      ,[PSI_15_ACC_LAC_NUM_DC]
+      ,[PSI_15_ACC_LAC_RATE]
+      ,[PSI_15_ACC_LAC_LOW_EST]
+      ,[PSI_15_ACC_LAC_HIGH_EST]
+      ,[PSI_90_SAFETY_NUM_DC]
+      ,[PSI_90_SAFETY_RATE]
+      ,[PSI_90_SAFETY_LOW_EST]
+      ,[PSI_90_SAFETY_HIGH_EST]
+      ,[IQI_11_AAA_NUM_DC]
+      ,[IQI_11_AAA_RATE]
+      ,[IQI_11_AAA_LOW_EST]
+      ,[IQI_11_AAA_HIGH_EST]
+      ,[IQI_19_HIP_FX_NUM_DC]
+      ,[IQI_19_HIP_FX_RATE]
+      ,[IQI_19_HIP_FX_LOW_EST]
+      ,[IQI_19_HIP_FX_HIGH_EST]
+      ,[IQI_91_CONDS_NUM_DC]
+      ,[IQI_91_CONDS_RATE]
+      ,[IQI_91_CONDS_LOW_EST]
+      ,[IQI_91_CONDS_HIGH_EST])
+)AS unpvt
+ORDER BY ProviderId, MeasureCode
+
+INSERT INTO @Full2011 (ProviderID, DataYear, Score, LowerEstimate, HigherEstimate, Denominator, MeasureCode, NationalComparisonCategory)
+SELECT b.ProviderID, 2011, s.FieldValue, le.FieldValue, he.FieldValue, d.FieldValue, b.MeasureCode
+      , CASE 
+	  WHEN b.FieldValue is null THEN 'Missing'
+	  WHEN b.FieldValue = 'Worse than U.S. National Rate' THEN 'Worse than the National Rate'
+	  WHEN b.FieldValue = 'Better than U.S. National Rate' THEN 'Better than the National Rate'
+	  WHEN b.FieldValue = 'N/A' THEN 'Not Available'
+	  WHEN b.FieldValue = 'No different than U.S. National Rate' THEN 'No Different than the National Rate'
+	  WHEN b.FieldValue = 'Number of Cases Too Small*' THEN 'Number of Cases Too Small'
+	  ELSE LTRIM(b.FieldValue)
+	  END 
+FROM @Base2011 b
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2011 WHERE MeasureCode LIKE '%_RATE') s on s.ProviderID = b.ProviderID AND b.MeasureCode + '_RATE' = s.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2011 WHERE MeasureCode LIKE '%_LOW_EST') le on le.ProviderID = b.ProviderID AND b.MeasureCode + '_LOW_EST' = le.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2011 WHERE MeasureCode LIKE '%_HIGH_EST') he on he.ProviderID = b.ProviderID AND b.MeasureCode + '_HIGH_EST' = he.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2011 WHERE MeasureCode LIKE '%_NUM_DC') d on D.ProviderID = b.ProviderID AND b.MeasureCode + '_NUM_DC' = d.MeasureCode
+WHERE
+	b.MeasureCode NOT LIKE '%_F'
+AND
+	b.MeasureCode NOT LIKE '%_EST'
+AND
+	b.MeasureCode NOT LIKE '%_DC'
+AND
+	b.MeasureCode NOT LIKE '%_RATE'
+
+--2012
+declare @Base2012 Table 
+(
+ProviderID varchar(10),
+MeasureCode varchar(100),
+FieldValue varchar(100)
+)
+
+declare @Full2012 Table 
+(
+ProviderID varchar(10),
+DataYear int,
+Score varchar(100),
+LowerEstimate varchar(100),
+HigherEstimate varchar(100),
+Denominator varchar(100),
+MeasureCode varchar(100),
+MeasureName varchar(255),
+NationalComparisonCategory varchar(100),
+MeasureStartDate varchar(100),
+MeasureEndDate varchar(100)
+)
+
+INSERT INTO @Base2012
+SELECT [Prvdr_id] as ProviderId, REPLACE(MeasureCode, '__', '_') AS MeasureCode, FieldValue
+FROM 
+   (SELECT [Prvdr_id], [PSI_4_SURG_COMP]
+      ,[PSI_4_SURG_COMP_F]
+      ,[PSI_6_IAT_PTX]
+      ,[PSI_6_IAT_PTX_F]
+      ,[PSI_11_POSTOP_RESPFAIL]
+      ,[PSI_11_POSTOP_RESPFAIL_F]
+      ,[PSI_12_POSTOP_PULMEMB_DVT]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_F]
+      ,[PSI_14_POSTOP_DEHIS]
+      ,[PSI_14_POSTOP_DEHIS_F]
+      ,[PSI_15_ACC_LAC]
+      ,[PSI_15_ACC_LAC_F]
+      ,[PSI_90_SAFETY]
+      ,[PSI_90_SAFETY_F]
+      ,[IQI_11_AAA]
+      ,[IQI_11_AAA_F]
+      ,[IQI_19_HIP_FX]
+      ,[IQI_19_HIP_FX_F]
+      ,[IQI_91_CONDS]
+      ,[IQI_91_CONDS_F]
+      ,[PSI_4_SURG_COMP_NUM_DC]
+      ,[PSI_4_SURG_COMP_RATE]
+      ,[PSI_4_SURG_COMP_LOW_EST]
+      ,[PSI_4_SURG_COMP_HIGH_EST]
+      ,[PSI_6_IAT_PTX_NUM_DC]
+      ,[PSI_6_IAT_PTX_RATE]
+      ,[PSI_6_IAT_PTX_LOW_EST]
+      ,[PSI_6_IAT_PTX_HIGH_EST]
+      ,[PSI_11_POSTOP_RESPFAIL_NUM_DC]
+      ,[PSI_11_POSTOP_RESPFAIL_RATE]
+      ,[PSI_11_POSTOP_RESPFAIL_LOW_EST]
+      ,[PSI_11_POSTOP_RESPFAIL_HIGH_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_NUM_DC]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_RATE]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_LOW_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_HIGH_EST]
+      ,[PSI_14_POSTOP_DEHIS_NUM_DC]
+      ,[PSI_14_POSTOP_DEHIS_RATE]
+      ,[PSI_14_POSTOP_DEHIS_LOW_EST]
+      ,[PSI_14_POSTOP_DEHIS_HIGH_EST]
+      ,[PSI_15_ACC_LAC_NUM_DC]
+      ,[PSI_15_ACC_LAC_RATE]
+      ,[PSI_15_ACC_LAC_LOW_EST]
+      ,[PSI_15_ACC_LAC_HIGH_EST]
+      ,[PSI_90_SAFETY_NUM_DC]
+      ,[PSI_90_SAFETY_RATE]
+      ,[PSI_90_SAFETY_LOW_EST]
+      ,[PSI_90_SAFETY_HIGH_EST]
+      ,[IQI_11_AAA_NUM_DC]
+      ,[IQI_11_AAA_RATE]
+      ,[IQI_11_AAA_LOW_EST]
+      ,[IQI_11_AAA_HIGH_EST]
+      ,[IQI_19_HIP_FX_NUM_DC]
+      ,[IQI_19_HIP_FX_RATE]
+      ,[IQI_19_HIP_FX_LOW_EST]
+      ,[IQI_19_HIP_FX_HIGH_EST]
+      ,[IQI_91_CONDS_NUM_DC]
+      ,[IQI_91_CONDS_RATE]
+      ,[IQI_91_CONDS_LOW_EST]
+      ,[IQI_91_CONDS_HIGH_EST]
+   FROM [HospitalCompareStage].[dbo].[2012_HQI_HOSP_AHRQ]) p
+UNPIVOT
+   (FieldValue FOR MeasureCode IN 
+      ([PSI_4_SURG_COMP]
+      ,[PSI_4_SURG_COMP_F]
+      ,[PSI_6_IAT_PTX]
+      ,[PSI_6_IAT_PTX_F]
+      ,[PSI_11_POSTOP_RESPFAIL]
+      ,[PSI_11_POSTOP_RESPFAIL_F]
+      ,[PSI_12_POSTOP_PULMEMB_DVT]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_F]
+      ,[PSI_14_POSTOP_DEHIS]
+      ,[PSI_14_POSTOP_DEHIS_F]
+      ,[PSI_15_ACC_LAC]
+      ,[PSI_15_ACC_LAC_F]
+      ,[PSI_90_SAFETY]
+      ,[PSI_90_SAFETY_F]
+      ,[IQI_11_AAA]
+      ,[IQI_11_AAA_F]
+      ,[IQI_19_HIP_FX]
+      ,[IQI_19_HIP_FX_F]
+      ,[IQI_91_CONDS]
+      ,[IQI_91_CONDS_F]
+      ,[PSI_4_SURG_COMP_NUM_DC]
+      ,[PSI_4_SURG_COMP_RATE]
+      ,[PSI_4_SURG_COMP_LOW_EST]
+      ,[PSI_4_SURG_COMP_HIGH_EST]
+      ,[PSI_6_IAT_PTX_NUM_DC]
+      ,[PSI_6_IAT_PTX_RATE]
+      ,[PSI_6_IAT_PTX_LOW_EST]
+      ,[PSI_6_IAT_PTX_HIGH_EST]
+      ,[PSI_11_POSTOP_RESPFAIL_NUM_DC]
+      ,[PSI_11_POSTOP_RESPFAIL_RATE]
+      ,[PSI_11_POSTOP_RESPFAIL_LOW_EST]
+      ,[PSI_11_POSTOP_RESPFAIL_HIGH_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_NUM_DC]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_RATE]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_LOW_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_HIGH_EST]
+      ,[PSI_14_POSTOP_DEHIS_NUM_DC]
+      ,[PSI_14_POSTOP_DEHIS_RATE]
+      ,[PSI_14_POSTOP_DEHIS_LOW_EST]
+      ,[PSI_14_POSTOP_DEHIS_HIGH_EST]
+      ,[PSI_15_ACC_LAC_NUM_DC]
+      ,[PSI_15_ACC_LAC_RATE]
+      ,[PSI_15_ACC_LAC_LOW_EST]
+      ,[PSI_15_ACC_LAC_HIGH_EST]
+      ,[PSI_90_SAFETY_NUM_DC]
+      ,[PSI_90_SAFETY_RATE]
+      ,[PSI_90_SAFETY_LOW_EST]
+      ,[PSI_90_SAFETY_HIGH_EST]
+      ,[IQI_11_AAA_NUM_DC]
+      ,[IQI_11_AAA_RATE]
+      ,[IQI_11_AAA_LOW_EST]
+      ,[IQI_11_AAA_HIGH_EST]
+      ,[IQI_19_HIP_FX_NUM_DC]
+      ,[IQI_19_HIP_FX_RATE]
+      ,[IQI_19_HIP_FX_LOW_EST]
+      ,[IQI_19_HIP_FX_HIGH_EST]
+      ,[IQI_91_CONDS_NUM_DC]
+      ,[IQI_91_CONDS_RATE]
+      ,[IQI_91_CONDS_LOW_EST]
+      ,[IQI_91_CONDS_HIGH_EST])
+)AS unpvt
+ORDER BY ProviderId, MeasureCode
+
+INSERT INTO @Full2012 (ProviderID, DataYear, Score, LowerEstimate, HigherEstimate, Denominator, MeasureCode, NationalComparisonCategory)
+SELECT b.ProviderID, 2012, s.FieldValue, le.FieldValue, he.FieldValue, d.FieldValue, b.MeasureCode
+      , CASE 
+	  WHEN b.FieldValue is null THEN 'Missing'
+	  WHEN b.FieldValue = 'Worse than U.S. National Rate' THEN 'Worse than the National Rate'
+	  WHEN b.FieldValue = 'Better than U.S. National Rate' THEN 'Better than the National Rate'
+	  WHEN b.FieldValue = 'N/A' THEN 'Not Available'
+	  WHEN b.FieldValue = 'No different than U.S. National Rate' THEN 'No Different than the National Rate'
+	  WHEN b.FieldValue = 'Number of Cases Too Small*' THEN 'Number of Cases Too Small'
+	  ELSE LTRIM(b.FieldValue)
+	  END 
+FROM @Base2012 b
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2012 WHERE MeasureCode LIKE '%_RATE') s on s.ProviderID = b.ProviderID AND b.MeasureCode + '_RATE' = s.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2012 WHERE MeasureCode LIKE '%_LOW_EST') le on le.ProviderID = b.ProviderID AND b.MeasureCode + '_LOW_EST' = le.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2012 WHERE MeasureCode LIKE '%_HIGH_EST') he on he.ProviderID = b.ProviderID AND b.MeasureCode + '_HIGH_EST' = he.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2012 WHERE MeasureCode LIKE '%_NUM_DC') d on D.ProviderID = b.ProviderID AND b.MeasureCode + '_NUM_DC' = d.MeasureCode
+WHERE
+	b.MeasureCode NOT LIKE '%_F'
+AND
+	b.MeasureCode NOT LIKE '%_EST'
+AND
+	b.MeasureCode NOT LIKE '%_DC'
+AND
+	b.MeasureCode NOT LIKE '%_RATE'
+
+--2013
+declare @Base2013 Table 
+(
+ProviderID varchar(10),
+MeasureCode varchar(100),
+FieldValue varchar(100)
+)
+
+declare @Full2013 Table 
+(
+ProviderID varchar(10),
+DataYear int,
+Score varchar(100),
+LowerEstimate varchar(100),
+HigherEstimate varchar(100),
+Denominator varchar(100),
+MeasureCode varchar(100),
+MeasureName varchar(255),
+NationalComparisonCategory varchar(100),
+MeasureStartDate varchar(100),
+MeasureEndDate varchar(100)
+)
+
+INSERT INTO @Base2013
+SELECT [Prvdr_id] as ProviderId, REPLACE(MeasureCode, '__', '_') AS MeasureCode, FieldValue
+FROM 
+   (SELECT [Prvdr_id]
+      ,[PSI_4_SURG_COMP]
+      ,[PSI_4_SURG_COMP_F]
+      ,[PSI_6_IAT_PTX]
+      ,[PSI_6_IAT_PTX_F]
+      ,[PSI_12_POSTOP_PULMEMB_DVT]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_F]
+      ,[PSI_14_POSTOP_DEHIS]
+      ,[PSI_14_POSTOP_DEHIS_F]
+      ,[PSI_15_ACC_LAC]
+      ,[PSI_15_ACC_LAC_F]
+      ,[PSI_90_SAFETY]
+      ,[PSI_90_SAFETY_F]
+      ,[PSI_4_SURG_COMP_NUM_DC]
+      ,[PSI_4_SURG_COMP_RATE]
+      ,[PSI_4_SURG_COMP_LOW_EST]
+      ,[PSI_4_SURG_COMP_HIGH_EST]
+      ,[PSI_6_IAT_PTX_NUM_DC]
+      ,[PSI_6_IAT_PTX_RATE]
+      ,[PSI_6_IAT_PTX_LOW_EST]
+      ,[PSI_6_IAT_PTX_HIGH_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_NUM_DC]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_RATE]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_LOW_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_HIGH_EST]
+      ,[PSI_14_POSTOP_DEHIS_NUM_DC]
+      ,[PSI_14_POSTOP_DEHIS_RATE]
+      ,[PSI_14_POSTOP_DEHIS_LOW_EST]
+      ,[PSI_14_POSTOP_DEHIS_HIGH_EST]
+      ,[PSI_15_ACC_LAC_NUM_DC]
+      ,[PSI_15_ACC_LAC_RATE]
+      ,[PSI_15_ACC_LAC_LOW_EST]
+      ,[PSI_15_ACC_LAC_HIGH_EST]
+      ,[PSI_90_SAFETY_NUM_DC]
+      ,[PSI_90_SAFETY_RATE]
+      ,[PSI_90_SAFETY_LOW_EST]
+      ,[PSI_90_SAFETY_HIGH_EST]
+   FROM [HospitalCompareStage].[dbo].[2013_HQI_HOSP_AHRQ]) p
+UNPIVOT
+   (FieldValue FOR MeasureCode IN 
+      ([PSI_4_SURG_COMP]
+      ,[PSI_4_SURG_COMP_F]
+      ,[PSI_6_IAT_PTX]
+      ,[PSI_6_IAT_PTX_F]
+      ,[PSI_12_POSTOP_PULMEMB_DVT]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_F]
+      ,[PSI_14_POSTOP_DEHIS]
+      ,[PSI_14_POSTOP_DEHIS_F]
+      ,[PSI_15_ACC_LAC]
+      ,[PSI_15_ACC_LAC_F]
+      ,[PSI_90_SAFETY]
+      ,[PSI_90_SAFETY_F]
+      ,[PSI_4_SURG_COMP_NUM_DC]
+      ,[PSI_4_SURG_COMP_RATE]
+      ,[PSI_4_SURG_COMP_LOW_EST]
+      ,[PSI_4_SURG_COMP_HIGH_EST]
+      ,[PSI_6_IAT_PTX_NUM_DC]
+      ,[PSI_6_IAT_PTX_RATE]
+      ,[PSI_6_IAT_PTX_LOW_EST]
+      ,[PSI_6_IAT_PTX_HIGH_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_NUM_DC]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_RATE]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_LOW_EST]
+      ,[PSI_12_POSTOP_PULMEMB_DVT_HIGH_EST]
+      ,[PSI_14_POSTOP_DEHIS_NUM_DC]
+      ,[PSI_14_POSTOP_DEHIS_RATE]
+      ,[PSI_14_POSTOP_DEHIS_LOW_EST]
+      ,[PSI_14_POSTOP_DEHIS_HIGH_EST]
+      ,[PSI_15_ACC_LAC_NUM_DC]
+      ,[PSI_15_ACC_LAC_RATE]
+      ,[PSI_15_ACC_LAC_LOW_EST]
+      ,[PSI_15_ACC_LAC_HIGH_EST]
+      ,[PSI_90_SAFETY_NUM_DC]
+      ,[PSI_90_SAFETY_RATE]
+      ,[PSI_90_SAFETY_LOW_EST]
+      ,[PSI_90_SAFETY_HIGH_EST])
+)AS unpvt
+ORDER BY ProviderId, MeasureCode
+
+INSERT INTO @Full2013 (ProviderID, DataYear, Score, LowerEstimate, HigherEstimate, Denominator, MeasureCode, NationalComparisonCategory)
+SELECT b.ProviderID, 2013, s.FieldValue, le.FieldValue, he.FieldValue, d.FieldValue, b.MeasureCode
+      , CASE 
+	  WHEN b.FieldValue is null THEN 'Missing'
+	  WHEN b.FieldValue = 'Worse than U.S. National Rate' THEN 'Worse than the National Rate'
+	  WHEN b.FieldValue = 'Better than U.S. National Rate' THEN 'Better than the National Rate'
+	  WHEN b.FieldValue = 'N/A' THEN 'Not Available'
+	  WHEN b.FieldValue = 'No different than U.S. National Rate' THEN 'No Different than the National Rate'
+	  WHEN b.FieldValue = 'Number of Cases Too Small*' THEN 'Number of Cases Too Small'
+	  ELSE LTRIM(b.FieldValue)
+	  END 
+FROM @Base2013 b
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2013 WHERE MeasureCode LIKE '%_RATE') s on s.ProviderID = b.ProviderID AND b.MeasureCode + '_RATE' = s.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2013 WHERE MeasureCode LIKE '%_LOW_EST') le on le.ProviderID = b.ProviderID AND b.MeasureCode + '_LOW_EST' = le.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2013 WHERE MeasureCode LIKE '%_HIGH_EST') he on he.ProviderID = b.ProviderID AND b.MeasureCode + '_HIGH_EST' = he.MeasureCode
+INNER JOIN (SELECT ProviderID, FieldValue, MeasureCode FROM @Base2013 WHERE MeasureCode LIKE '%_NUM_DC') d on D.ProviderID = b.ProviderID AND b.MeasureCode + '_NUM_DC' = d.MeasureCode
+WHERE
+	b.MeasureCode NOT LIKE '%_F'
+AND
+	b.MeasureCode NOT LIKE '%_EST'
+AND
+	b.MeasureCode NOT LIKE '%_DC'
+AND
+	b.MeasureCode NOT LIKE '%_RATE'
+
+SELECT 
+      [Provider Number] AS ProviderID
+	  , 2009 AS DataYear     
+	  , CASE WHEN CAST([Mortality_Readm Rate] AS varchar(100)) = 'N/A' THEN null ELSE CAST([Mortality_Readm Rate] AS varchar(100)) END AS Score
+	  , CASE WHEN CAST([Lower Mortality_Readm Estimate] AS varchar(100)) = 'N/A' THEN null ELSE CAST([Lower Mortality_Readm Estimate] AS varchar(100)) END As LowerEstimate
+	  , CASE WHEN CAST([Upper Mortality_Readm Estimate] AS varchar(100)) = 'N/A' THEN null ELSE CAST([Upper Mortality_Readm Estimate] AS varchar(100)) END As HigherEstimate
+	  , CASE WHEN CAST([Number of Patients] AS varchar(100)) = 'N/A' THEN null ELSE CAST([Number of Patients] AS varchar(100)) END As Denominator
+	  ,CASE 
+	  WHEN [Measure Name] = 'Hospital 30-Day Readmission Rates for Pneumonia' THEN 'READM_30_PN'	  
+	  WHEN [Measure Name] = 'Hospital 30-Day Readmission Rates for Heart Failure' THEN 'READM_30_HF'
+	  WHEN [Measure Name] = 'Hospital 30-Day Readmission Rates for Heart Attack' THEN 'READM_30_AMI'
+	  WHEN [Measure Name] = 'Hospital 30-Day Death (Mortality) Rates for Pneumonia' THEN 'MORT_30_PN'
+	  WHEN [Measure Name] = 'Hospital 30-Day Death (Mortality) Rates for Heart Failure' THEN 'MORT_30_HF'
+	  WHEN [Measure Name] = 'Hospital 30-Day Death (Mortality) Rates for Heart Attack' THEN 'MORT_30_AMI' 
+	  ELSE [Condition]
+	  END AS [MeasureCode]
+      ,CASE 
+	  WHEN [Measure Name] = 'Hospital 30-Day Readmission Rates for Pneumonia' THEN 'Pneumonia (PN) 30-Day Readmission Rate'	  
+	  WHEN [Measure Name] = 'Hospital 30-Day Readmission Rates for Heart Failure' THEN 'Heart failure (HF) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Hospital 30-Day Readmission Rates for Heart Attack' THEN 'Acute Myocardial Infarction (AMI) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Hospital 30-Day Death (Mortality) Rates for Pneumonia' THEN 'Pneumonia (PN) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Hospital 30-Day Death (Mortality) Rates for Heart Failure' THEN 'Heart failure (HF) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Hospital 30-Day Death (Mortality) Rates for Heart Attack' THEN 'Acute Myocardial Infarction (AMI) 30-Day Mortality Rate' 
+	  ELSE [Measure Name]
+	  END AS [MeasureName]
+	  ,  CASE 
+	  WHEN Category is null THEN 'Missing'
+	  WHEN Category = 'Worse than U.S. National Rate' THEN 'Worse than the National Rate'
+	  WHEN Category = 'Better than U.S. National Rate' THEN 'Better than the National Rate'
+	  WHEN Category = 'N/A' THEN 'Not Available'
+	  WHEN Category = 'No different than U.S. National Rate' THEN 'No Different than the National Rate'
+	  WHEN Category = 'Number of Cases Too Small*' THEN 'Number of Cases Too Small'
+	  ELSE Category
+	  END As [Category]
+	  , NULL AS [MeasureStartDate]
+	  , NULL AS [MeasureEndDate]
+ --into #temp
+  FROM [HospitalCompareStage].[dbo].[2009_HQI_HOSP_MORTALITY_READM_XWLK]
+  UNION
+  SELECT 
+      SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2010 AS DataYear   
+	  , CASE WHEN CAST([Mortality_Readm Rate] AS varchar) = 'N/A' THEN null ELSE CAST([Mortality_Readm Rate] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Mortality_Readm Estimate] AS varchar) = 'N/A' THEN null ELSE CAST([Lower Mortality_Readm Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Upper Mortaility_Readm Estimate] AS varchar) = 'N/A' THEN null ELSE CAST([Upper Mortaility_Readm Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Number of Patients] AS varchar) = 'N/A' THEN null ELSE CAST([Number of Patients] AS varchar) END As Denominator
+	  , CASE 
+	  WHEN [Measure Name] = 'Pneumonia Readmission Rates' THEN 'READM_30_PN'	  
+	  WHEN [Measure Name] = 'Heart Failure Readmission Rates' THEN 'READM_30_HF'
+	  WHEN [Measure Name] = 'Heart Attack Readmission Rates' THEN 'READM_30_AMI'
+	  WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Mortality Rate' THEN 'MORT_30_PN'
+	  WHEN [Measure Name] = 'Heart Failure Death (Mortality) Rates' THEN 'MORT_30_HF'
+	  WHEN [Measure Name] = 'Heart Attack Death (Mortality) Rates' THEN 'MORT_30_AMI' 
+	  ELSE [Condition]
+	  END AS [MeasureCode]
+      ,CASE 
+	  WHEN [Measure Name] = 'Pneumonia Readmission Rates' THEN 'Pneumonia (PN) 30-Day Readmission Rate'	  
+	  WHEN [Measure Name] = 'Heart Failure Readmission Rates' THEN 'Heart failure (HF) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Heart Attack Readmission Rates' THEN 'Acute Myocardial Infarction (AMI) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Mortality Rate' THEN 'Pneumonia (PN) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Heart Failure Death (Mortality) Rates' THEN 'Heart failure (HF) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Heart Attack Death (Mortality) Rates' THEN 'Acute Myocardial Infarction (AMI) 30-Day Mortality Rate' 
+	  ELSE [Measure Name]
+	  END AS [MeasureName]
+	  , CASE 
+	  WHEN [Comparison to National Rate] is null THEN 'Missing'
+	  WHEN [Comparison to National Rate] = 'Worse than U.S. National Rate' THEN 'Worse than the National Rate'
+	  WHEN [Comparison to National Rate] = 'Better than U.S. National Rate' THEN 'Better than the National Rate'
+	  WHEN [Comparison to National Rate] = 'N/A' THEN 'Not Available'
+	  WHEN [Comparison to National Rate] = 'No different than U.S. National Rate' THEN 'No Different than the National Rate'
+	  WHEN [Comparison to National Rate] = 'Number of Cases Too Small*' THEN 'Number of Cases Too Small'
+	  ELSE [Comparison to National Rate]
+	  END
+	  , NULL AS [MeasureStartDate]
+	  , NULL AS [MeasureEndDate]	
+  FROM [HospitalCompareStage].[dbo].[2010_HQI_HOSP_MORTALITY_READM_XWLK]
+  UNION
+  SELECT 
+      SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2011 AS DataYear  
+	  , CASE WHEN CAST([Mortality_Readm Rate] AS varchar) = 'N/A' THEN null ELSE CAST([Mortality_Readm Rate] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Mortality_Readm Estimate] AS varchar) = 'N/A' THEN null ELSE CAST([Lower Mortality_Readm Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Upper Mortaility_Readm Estimate] AS varchar) = 'N/A' THEN null ELSE CAST([Upper Mortaility_Readm Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Number of Patients] AS varchar) = 'N/A' THEN null ELSE CAST([Number of Patients] AS varchar) END As Denominator 
+	  ,CASE 
+	  WHEN [Measure Name] = 'Pneumonia Readmission Rates' THEN 'READM_30_PN'	  
+	  WHEN [Measure Name] = 'Heart Failure Readmission Rates' THEN 'READM_30_HF'
+	  WHEN [Measure Name] = 'Heart Attack Readmission Rates' THEN 'READM_30_AMI'
+	  WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Mortality Rate' THEN 'MORT_30_PN'
+	  WHEN [Measure Name] = 'Heart Failure Death (Mortality) Rates' THEN 'MORT_30_HF'
+	  WHEN [Measure Name] = 'Heart Attack Death (Mortality) Rates' THEN 'MORT_30_AMI' 
+	  ELSE [Condition]
+	  END AS [MeasureCode]
+      ,CASE 
+	  WHEN [Measure Name] = 'Pneumonia Readmission Rates' THEN 'Pneumonia (PN) 30-Day Readmission Rate'	  
+	  WHEN [Measure Name] = 'Heart Failure Readmission Rates' THEN 'Heart failure (HF) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Heart Attack Readmission Rates' THEN 'Acute Myocardial Infarction (AMI) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Mortality Rate' THEN 'Pneumonia (PN) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Heart Failure Death (Mortality) Rates' THEN 'Heart failure (HF) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Heart Attack Death (Mortality) Rates' THEN 'Acute Myocardial Infarction (AMI) 30-Day Mortality Rate' 
+	  ELSE [Measure Name]
+	  END AS [MeasureName]
+	  , CASE 
+	  WHEN [Comparison to National Rate] is null THEN 'Missing'
+	  WHEN [Comparison to National Rate] = 'Worse than U.S. National Rate' THEN 'Worse than the National Rate'
+	  WHEN [Comparison to National Rate] = 'Better than U.S. National Rate' THEN 'Better than the National Rate'
+	  WHEN [Comparison to National Rate] = 'N/A' THEN 'Not Available'
+	  WHEN [Comparison to National Rate] = 'No different than U.S. National Rate' THEN 'No Different than the National Rate'
+	  WHEN [Comparison to National Rate] = 'Number of Cases Too Small*' THEN 'Number of Cases Too Small'
+	  ELSE [Comparison to National Rate]
+	  END
+	  , NULL AS [MeasureStartDate]
+	  , NULL AS [MeasureEndDate]	
+  FROM [HospitalCompareStage].[dbo].[2011_HQI_HOSP_MORTALITY_READM_XWLK]
+  UNION
+  SELECT ProviderID, DataYear, Score, LowerEstimate, HigherEstimate, Denominator
+		, MeasureCode, MeasureName, NationalComparisonCategory, MeasureStartDate, MeasureEndDate
+  FROM @Full2011
+  UNION
+  SELECT 
+      SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2012 AS DataYear   
+	  , CASE WHEN CAST([Mortality_Readm Rate] AS varchar) = 'Not Available' THEN null ELSE CAST([Mortality_Readm Rate] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Mortality_Readm Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Lower Mortality_Readm Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Upper Mortality_Readm Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Upper Mortality_Readm Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Number of Patients] AS varchar) = 'Not Available' THEN null ELSE CAST([Number of Patients] AS varchar) END As Denominator
+	  ,CASE 
+	  WHEN [Measure Name] = 'Pneumonia Readmission Rates' THEN 'READM_30_PN'	  
+	  WHEN [Measure Name] = 'Heart Failure Readmission Rates' THEN 'READM_30_HF'
+	  WHEN [Measure Name] = 'Heart Attack Readmission Rates' THEN 'READM_30_AMI'
+	  WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Mortality Rate' THEN 'MORT_30_PN'
+	  WHEN [Measure Name] = 'Heart Failure Death (Mortality) Rates' THEN 'MORT_30_HF'
+	  WHEN [Measure Name] = 'Heart Attack Death (Mortality) Rates' THEN 'MORT_30_AMI' 
+	  ELSE [Condition]
+	  END AS [MeasureCode]
+      ,CASE 
+	  WHEN [Measure Name] = 'Pneumonia Readmission Rates' THEN 'Pneumonia (PN) 30-Day Readmission Rate'	  
+	  WHEN [Measure Name] = 'Heart Failure Readmission Rates' THEN 'Heart failure (HF) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Heart Attack Readmission Rates' THEN 'Acute Myocardial Infarction (AMI) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Mortality Rate' THEN 'Pneumonia (PN) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Heart Failure Death (Mortality) Rates' THEN 'Heart failure (HF) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Heart Attack Death (Mortality) Rates' THEN 'Acute Myocardial Infarction (AMI) 30-Day Mortality Rate' 
+	  ELSE [Measure Name]
+	  END AS [MeasureName]
+	  , CASE 
+	  WHEN [Comparison to National Rate] is null THEN 'Missing'
+	  WHEN [Comparison to National Rate] = 'Worse than U.S. National Rate' THEN 'Worse than the National Rate'
+	  WHEN [Comparison to National Rate] = 'Better than U.S. National Rate' THEN 'Better than the National Rate'
+	  WHEN [Comparison to National Rate] = 'N/A' THEN 'Not Available'
+	  WHEN [Comparison to National Rate] = 'No different than U.S. National Rate' THEN 'No Different than the National Rate'
+	  WHEN [Comparison to National Rate] = 'Number of Cases Too Small*' THEN 'Number of Cases Too Small'
+	  ELSE [Comparison to National Rate]
+	  END
+	  , NULL AS [MeasureStartDate]
+	  , NULL AS [MeasureEndDate]
+  FROM [HospitalCompareStage].[dbo].[2012_HQI_HOSP_MORTALITY]
+  UNION
+  SELECT ProviderID, DataYear, Score, LowerEstimate, HigherEstimate, Denominator
+		, MeasureCode, MeasureName, NationalComparisonCategory, MeasureStartDate, MeasureEndDate
+  FROM @Full2012
+  UNION
+  SELECT 
+      SUBSTRING(RTRIM(LTRIM([Provider Number])), 2, 6)
+	  , 2013 AS DataYear   
+	  , CASE WHEN CAST([Mortality_Readm_Compl_Rate] AS varchar) = 'Not Available' THEN null ELSE CAST([Mortality_Readm_Compl_Rate] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Mortality_Readm Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Lower Mortality_Readm Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Upper Mortality_Readm Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Upper Mortality_Readm Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Number of Patients] AS varchar) = 'Not Available' THEN null ELSE CAST([Number of Patients] AS varchar) END As Denominator
+	  ,CASE 
+	  WHEN [Measure Name] = 'Pneumonia Readmission Rates' THEN 'READM_30_PN'	  
+	  WHEN [Measure Name] = 'Heart Failure Readmission Rates' THEN 'READM_30_HF'
+	  WHEN [Measure Name] = 'Heart Attack Readmission Rates' THEN 'READM_30_AMI'
+	  WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Mortality Rate' THEN 'MORT_30_PN'
+	  WHEN [Measure Name] = 'Heart Failure Death (Mortality) Rates' THEN 'MORT_30_HF'
+	  WHEN [Measure Name] = 'Heart Attack Death (Mortality) Rates' THEN 'MORT_30_AMI'
+	  WHEN [Measure Name] = '30-day hospital-wide all- cause unplanned readmission (HWR)' THEN 'READM_30_HOSP_WIDE'
+	  WHEN [Measure Name] = '30-day readmission rate following elective primary total hip arthroplasty (THA) and/or total knee arthroplasty (TKA)' THEN 'READM_30_HIP_KNEE'   
+	  WHEN [Measure Name] = 'Hospital level risk-standardized complication rate (RSCR) following elective primary total hip arthoplasty (THA) and total knee arthroplasty (TKA)' THEN 'COMP_HIP_KNEE'
+	  ELSE [Condition]
+	  END AS [MeasureCode]
+      ,CASE 
+	  WHEN [Measure Name] = 'Pneumonia Readmission Rates' THEN 'Pneumonia (PN) 30-Day Readmission Rate'	  
+	  WHEN [Measure Name] = 'Heart Failure Readmission Rates' THEN 'Heart failure (HF) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Heart Attack Readmission Rates' THEN 'Acute Myocardial Infarction (AMI) 30-Day Readmission Rate'
+	  WHEN [Measure Name] = 'Pneumonia (PN) 30-Day Mortality Rate' THEN 'Pneumonia (PN) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Heart Failure Death (Mortality) Rates' THEN 'Heart failure (HF) 30-Day Mortality Rate'
+	  WHEN [Measure Name] = 'Heart Attack Death (Mortality) Rates' THEN 'Acute Myocardial Infarction (AMI) 30-Day Mortality Rate' 
+	  WHEN [Measure Name] = '30-day hospital-wide all- cause unplanned readmission (HWR)' THEN 'Rate of readmission after discharge from hospital (hospital-wide)' 
+	  WHEN [Measure Name] = '30-day readmission rate following elective primary total hip arthroplasty (THA) and/or total knee arthroplasty (TKA)' THEN 'Rate of readmission after hip/knee replacement' 
+	  WHEN [Measure Name] = 'Hospital level risk-standardized complication rate (RSCR) following elective primary total hip arthoplasty (THA) and total knee arthroplasty (TKA)' THEN 'Rate of complications for hip/knee replacement patients'
+	  ELSE [Measure Name]
+	  END AS [MeasureName]
+	  , CASE 
+	  WHEN [Comparison to National Rate] is null THEN 'Missing'
+	  WHEN [Comparison to National Rate] = 'Worse than U.S. National Rate' THEN 'Worse than the National Rate'
+	  WHEN [Comparison to National Rate] = 'Better than U.S. National Rate' THEN 'Better than the National Rate'
+	  WHEN [Comparison to National Rate] = 'N/A' THEN 'Not Available'
+	  WHEN [Comparison to National Rate] = 'No different than U.S. National Rate' THEN 'No Different than the National Rate'
+	  WHEN [Comparison to National Rate] = 'Number of Cases Too Small*' THEN 'Number of Cases Too Small'
+	  ELSE [Comparison to National Rate]
+	  END
+	  , NULL AS [MeasureStartDate]
+	  , NULL AS [MeasureEndDate]	
+  FROM [HospitalCompareStage].[dbo].[2013_HQI_HOSP_MORTALITY_READM_XWLK]
+  UNION
+  SELECT ProviderID, DataYear, Score, LowerEstimate, HigherEstimate, Denominator
+		, MeasureCode, MeasureName, NationalComparisonCategory, MeasureStartDate, MeasureEndDate
+  FROM @Full2013
+  UNION
+  SELECT 
+      [Provider ID]
+	  , 2014 AS DataYear      
+      , CASE WHEN CAST([Score] AS varchar) = 'Not Available' THEN null ELSE CAST([Score] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Lower Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Higher Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Higher Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Denominator] AS varchar) = 'Not Available' THEN null ELSE CAST([Denominator] AS varchar) END As Denominator
+	  ,[Measure ID]
+	  ,CASE 
+	  WHEN [Measure Name] = 'Rate of unplanned readmission for chronic obstructive pulmonary disease (COPD) patients' THEN 'Rate of readmission for chronic obstructive pulmonary disease (COPD) patients'	  
+	  WHEN [Measure Name] = 'Rate of readmission after hip/knee surgery' THEN 'Rate of readmission after hip/knee replacement'
+	  WHEN [Measure Name] = 'Rate of unplanned readmission for stroke patients' THEN 'Rate of readmission for stroke patients'
+	  ELSE [Measure Name]
+	  END AS [MeasureName]
+	  , CASE 
+	  WHEN [Compared to National] = ' Not Available' THEN 'Not Available'
+	  WHEN [Compared to National] = 'No different than the National Rate' THEN 'No Different than the National Rate'
+	  ELSE [Compared to National]
+	  END
+	  , [Measure Start Date]
+      , [Measure End Date]
+  FROM [HospitalCompareStage].[dbo].[2014_HQI_HOSP_ReadmCompDeath]
+  UNION
+  SELECT 
+      [Provider ID]
+	  , 2015 AS DataYear      
+      , CASE WHEN CAST([Score] AS varchar) = 'Not Available' THEN null ELSE CAST([Score] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Lower Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Higher Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Higher Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Denominator] AS varchar) = 'Not Available' THEN null ELSE CAST([Denominator] AS varchar) END As Denominator
+	  ,[Measure ID]
+	  ,CASE 
+	  WHEN [Measure Name] = 'Rate of unplanned readmission for chronic obstructive pulmonary disease (COPD) patients' THEN 'Rate of readmission for chronic obstructive pulmonary disease (COPD) patients'	  
+	  WHEN [Measure Name] = 'Rate of readmission after hip/knee surgery' THEN 'Rate of readmission after hip/knee replacement'
+	  WHEN [Measure Name] = 'Rate of unplanned readmission for stroke patients' THEN 'Rate of readmission for stroke patients'
+	  WHEN [Measure Name] = 'Rate of unplanned readmission for CABG' THEN 'Rate of readmission for CABG'
+	  ELSE [Measure Name]
+	  END AS [MeasureName]
+	  , CASE 
+	  WHEN [Compared to National] = ' Not Available' THEN 'Not Available'
+	  WHEN [Compared to National] = 'No different than the National Rate' THEN 'No Different than the National Rate'
+	  ELSE [Compared to National]
+	  END
+	  , [Measure Start Date]
+      , [Measure End Date]
+  FROM [HospitalCompareStage].[dbo].[2015_HQI_HOSP_ReadmDeath]
+  UNION
+  SELECT 
+      [Provider ID]
+	  , 2015 AS DataYear      
+      , CASE WHEN CAST([Score] AS varchar) = 'Not Available' THEN null ELSE CAST([Score] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Lower Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Higher Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Higher Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Denominator] AS varchar) = 'Not Available' THEN null ELSE CAST([Denominator] AS varchar) END As Denominator
+	  ,[Measure ID]
+	  , [Measure Name]
+	  , CASE 
+	  WHEN [Compared to National] = ' Not Available' THEN 'Not Available'
+	  WHEN [Compared to National] = 'No different than the National Rate' THEN 'No Different than the National Rate'
+	  ELSE [Compared to National]
+	  END
+	  , [Measure Start Date]
+      , [Measure End Date]
+  FROM [HospitalCompareStage].[dbo].[2015_HQI_HOSP_Comp]
+  UNION
+  SELECT 
+      [Provider ID]
+	  , 2016 AS DataYear      
+      , CASE WHEN CAST([Score] AS varchar) = 'Not Available' THEN null ELSE CAST([Score] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Lower Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Higher Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Higher Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Denominator] AS varchar) = 'Not Available' THEN null ELSE CAST([Denominator] AS varchar) END As Denominator
+	  ,[Measure ID]
+	  , [Measure Name]
+	  , CASE 
+	  WHEN [Compared to National] = ' Not Available' THEN 'Not Available'
+	  ELSE [Compared to National]
+	  END
+	  , [Measure Start Date]
+      , [Measure End Date]
+  FROM [HospitalCompareStage].[dbo].[2016_HQI_HOSP_ReadmDeath]
+  UNION
+  SELECT 
+      [Provider ID]
+	  , 2016 AS DataYear      
+	  , CASE WHEN CAST([Score] AS varchar) = 'Not Available' THEN null ELSE CAST([Score] AS varchar) END AS Score
+	  , CASE WHEN CAST([Lower Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Lower Estimate] AS varchar) END As LowerEstimate
+	  , CASE WHEN CAST([Higher Estimate] AS varchar) = 'Not Available' THEN null ELSE CAST([Higher Estimate] AS varchar) END As HigherEstimate
+	  , CASE WHEN CAST([Denominator] AS varchar) = 'Not Available' THEN null ELSE CAST([Denominator] AS varchar) END As Denominator
+	  ,[Measure ID]
+	  , [Measure Name]
+	  , CASE 
+	  WHEN [Compared to National] = ' Not Available' THEN 'Not Available'
+	  ELSE [Compared to National]
+	  END
+	  , [Measure Start Date]
+      , [Measure End Date]
+  FROM [HospitalCompareStage].[dbo].[2016_HQI_HOSP_Comp]
+  ORDER BY [ProviderID], DataYear, MeasureCode
+
+  --select distinct measurestartdate from #temp
+  --select * from #temp where measurecode not in (select ReadmCompDeathMeasureCode from UNRHealthcareData.dbo.ReadmCompDeathMeasure)
+  -- select * from #temp where Category not in (select Category from UNRHealthcareData.dbo.NationalComparisonCategory)
+    -- select * from #temp where Category = 'No different than the National Rate'</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderID]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[ProviderID]"
+                      name="ProviderID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Score]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[Score]"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Score]"
+                      name="Score"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[LowerEstimate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[LowerEstimate]"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[LowerEstimate]"
+                      name="LowerEstimate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[HigherEstimate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[HigherEstimate]"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[HigherEstimate]"
+                      name="HigherEstimate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Denominator]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[Denominator]"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Denominator]"
+                      name="Denominator"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      length="255"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      name="MeasureCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureName]"
+                      codePage="1252"
+                      dataType="text"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureName]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureName]"
+                      name="MeasureName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Category]"
+                      codePage="1252"
+                      dataType="text"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[Category]"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[Category]"
+                      name="Category"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      length="10"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      length="10"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      name="ProviderID" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[Score]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Score" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[LowerEstimate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="LowerEstimate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[HigherEstimate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="HigherEstimate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[Denominator]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="Denominator" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="255"
+                      name="MeasureCode" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureName]"
+                      codePage="1252"
+                      dataType="text"
+                      name="MeasureName" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[Category]"
+                      codePage="1252"
+                      dataType="text"
+                      name="Category" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[ProviderID]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[ProviderID]"
+                      name="ProviderID" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[Score]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[Score]"
+                      name="Score" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[LowerEstimate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[LowerEstimate]"
+                      name="LowerEstimate" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[HigherEstimate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[HigherEstimate]"
+                      name="HigherEstimate" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[Denominator]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[Denominator]"
+                      name="Denominator" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="255"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      name="MeasureCode" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureName]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureName]"
+                      name="MeasureName" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[Category]"
+                      codePage="1252"
+                      dataType="text"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[Category]"
+                      name="Category" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Populate ReadmCompDeathScores.Paths[Data Conversion Output]"
+              endId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Inputs[Lookup Input]"
+              name="Data Conversion Output"
+              startId="Package\Populate ReadmCompDeathScores\Data Conversion.Outputs[Data Conversion Output]" />
+            <path
+              refId="Package\Populate ReadmCompDeathScores.Paths[Derived Column Output]"
+              endId="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows.Inputs[OLE DB Destination Input]"
+              name="Derived Column Output"
+              startId="Package\Populate ReadmCompDeathScores\Derive Package Name.Outputs[Derived Column Output]" />
+            <path
+              refId="Package\Populate ReadmCompDeathScores.Paths[Lookup Error Output]"
+              endId="Package\Populate ReadmCompDeathScores\Derive Package Name.Inputs[Derived Column Input]"
+              name="Lookup Error Output"
+              startId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Error Output]" />
+            <path
+              refId="Package\Populate ReadmCompDeathScores.Paths[Lookup Match Output]"
+              endId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Inputs[Lookup Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate ReadmCompDeathScores\Lookup MeasureCode.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate ReadmCompDeathScores.Paths[Lookup Match Output1]"
+              endId="Package\Populate ReadmCompDeathScores\OLE DB Destination.Inputs[OLE DB Destination Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate ReadmCompDeathScores.Paths[OLE DB Source Output]"
+              endId="Package\Populate ReadmCompDeathScores\Data Conversion.Inputs[Data Conversion Input]"
+              name="OLE DB Source Output"
+              startId="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{AAF6BFF0-3625-4F25-A5F6-1172AD896EB3}"
+      DTS:From="Package\Populate ReadmCompDeathScores"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\CREATE vReadmCompDeathScore" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="241,42"
+          Id="Package\CREATE vReadmCompDeathScore"
+          TopLeft="283,330" />
+        <NodeLayout
+          Size="244,42"
+          Id="Package\Populate ReadmCompDeathScores"
+          TopLeft="247,221" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="369,263">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="34.5,67"
+              Start="0,0"
+              End="34.5,59.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,29.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,29.5"
+                    Point2="0,33.5"
+                    Point3="4,33.5" />
+                  <mssgle:LineSegment
+                    End="30.5,33.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="30.5,33.5"
+                    Point2="34.5,33.5"
+                    Point3="34.5,37.5" />
+                  <mssgle:LineSegment
+                    End="34.5,59.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Populate ReadmCompDeathScores">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="16" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="173,42"
+          Id="Package\Populate ReadmCompDeathScores\OLE DB Destination"
+          TopLeft="429,580" />
+        <NodeLayout
+          Size="184,42"
+          Id="Package\Populate ReadmCompDeathScores\Derive Package Name"
+          TopLeft="525,339" />
+        <NodeLayout
+          Size="280,42"
+          Id="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows"
+          TopLeft="774,387" />
+        <NodeLayout
+          Size="182,42"
+          Id="Package\Populate ReadmCompDeathScores\Lookup MeasureCode"
+          TopLeft="166,211" />
+        <NodeLayout
+          Size="158,42"
+          Id="Package\Populate ReadmCompDeathScores\Data Conversion"
+          TopLeft="173,123" />
+        <NodeLayout
+          Size="239,42"
+          Id="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category"
+          TopLeft="170,383" />
+        <NodeLayout
+          Size="234,42"
+          Id="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source"
+          TopLeft="121,27" />
+        <EdgeLayout
+          Id="Package\Populate ReadmCompDeathScores.Paths[Lookup Error Output]"
+          TopLeft="409,404">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="116,-44"
+              Start="0,0"
+              End="108.5,-44">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="54,0" />
+                  <mssgle:CubicBezierSegment
+                    Point1="54,0"
+                    Point2="58,0"
+                    Point3="58,-4" />
+                  <mssgle:LineSegment
+                    End="58,-40" />
+                  <mssgle:CubicBezierSegment
+                    Point1="58,-40"
+                    Point2="58,-44"
+                    Point3="62,-44" />
+                  <mssgle:LineSegment
+                    End="108.5,-44" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="12.13361328125,1,91.7327734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate ReadmCompDeathScores.Paths[Derived Column Output]"
+          TopLeft="709,360">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="65,48"
+              Start="0,0"
+              End="57.5,48">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="28.5,0" />
+                  <mssgle:CubicBezierSegment
+                    Point1="28.5,0"
+                    Point2="32.5,0"
+                    Point3="32.5,4" />
+                  <mssgle:LineSegment
+                    End="32.5,44" />
+                  <mssgle:CubicBezierSegment
+                    Point1="32.5,44"
+                    Point2="32.5,48"
+                    Point3="36.5,48" />
+                  <mssgle:LineSegment
+                    End="57.5,48" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate ReadmCompDeathScores.Paths[Data Conversion Output]"
+          TopLeft="254.5,165">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,46"
+              Start="0,0"
+              End="0,38.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,38.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate ReadmCompDeathScores.Paths[OLE DB Source Output]"
+          TopLeft="238,69">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="14,54"
+              Start="0,0"
+              End="14,46.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,23" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,23"
+                    Point2="0,27"
+                    Point3="4,27" />
+                  <mssgle:LineSegment
+                    End="10,27" />
+                  <mssgle:CubicBezierSegment
+                    Point1="10,27"
+                    Point2="14,27"
+                    Point3="14,31" />
+                  <mssgle:LineSegment
+                    End="14,46.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate ReadmCompDeathScores.Paths[Lookup Match Output1]"
+          TopLeft="289.5,425">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="226,155"
+              Start="0,0"
+              End="226,147.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,73.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,73.5"
+                    Point2="0,77.5"
+                    Point3="4,77.5" />
+                  <mssgle:LineSegment
+                    End="222,77.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="222,77.5"
+                    Point2="226,77.5"
+                    Point3="226,81.5" />
+                  <mssgle:LineSegment
+                    End="226,147.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="64.80861328125,82.5,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate ReadmCompDeathScores.Paths[Lookup Match Output]"
+          TopLeft="257,253">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="32.5,130"
+              Start="0,0"
+              End="32.5,122.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,61" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,61"
+                    Point2="0,65"
+                    Point3="4,65" />
+                  <mssgle:LineSegment
+                    End="28.5,65" />
+                  <mssgle:CubicBezierSegment
+                    Point1="28.5,65"
+                    Point2="32.5,65"
+                    Point3="32.5,69" />
+                  <mssgle:LineSegment
+                    End="32.5,122.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-31.94138671875,70,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate ReadmCompDeathScores\OLE DB Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate ReadmCompDeathScores\NationalComparisonCategory Failure Rows">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate ReadmCompDeathScores\Lookup MeasureCode">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[Measure]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate ReadmCompDeathScores\Lookup Nat Comparison Category">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[NationalComparisonCategory]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate ReadmCompDeathScores\ReadmCompDeath Score Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

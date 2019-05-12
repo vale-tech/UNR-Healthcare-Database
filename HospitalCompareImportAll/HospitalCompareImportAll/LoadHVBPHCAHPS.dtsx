@@ -1,0 +1,1514 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="2/17/2017 12:53:39 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{84928540-22C2-429B-90C8-379C8E97B10B}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadHVBPHCAHPS"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="6"
+  DTS:VersionGUID="{CA11DFE6-85A2-47C5-96B2-70219149B57E}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\CREATE HVBPHCAHPSScore View"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{EADF90B8-EFDA-43F4-8F2E-085C997EFE7F}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="CREATE HVBPHCAHPSScore View"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @cols3 AS NVARCHAR(MAX)&#xA;, @cols4 AS NVARCHAR(MAX)&#xA;, @cols5 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @query3 AS NVARCHAR(MAX)&#xA;, @query4 AS NVARCHAR(MAX)&#xA;, @query5 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vHVBPHCAHPSScorePivot', 'V') IS NOT NULL&#xA;DROP VIEW vHVBPHCAHPSScorePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME('MId_' + CAST(mis.[HVBPHCAHPSMeasureId] AS nvarchar)) &#xA;                    FROM [UNRHealthcareData].[dbo].[HVBPHCAHPSScore] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[HVBPHCAHPSMeasure] m on m.HVBPHCAHPSMeasureId = mis.HVBPHCAHPSMeasureId&#xA;                    group by mis.[HVBPHCAHPSMeasureId]&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;SET @cols1 = REPLACE(@cols, ']', '_AchievementPoints]')&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''MId_'' + CAST(mis.[HVBPHCAHPSMeasureId] AS nvarchar) + ''_AchievementPoints'' AS MeasureNameRename, AchievementPoints&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HVBPHCAHPSScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[HVBPHCAHPSMeasure] m on m.HVBPHCAHPSMeasureId = mis.HVBPHCAHPSMeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(AchievementPoints)&#xA;&#x9;FOR MeasureNameRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;--select @query1&#xA;&#xA;SET @cols2 = REPLACE(@cols, ']', '_ImprovementPoints]')&#xA;&#xA;set @query2 = 'SELECT p.ProviderId, p.DataYear, ' + @cols2 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''MId_'' + CAST(mis.[HVBPHCAHPSMeasureId] AS nvarchar) + ''_ImprovementPoints'' AS MeasureNameRename, ImprovementPoints&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HVBPHCAHPSScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[HVBPHCAHPSMeasure] m on m.HVBPHCAHPSMeasureId = mis.HVBPHCAHPSMeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(ImprovementPoints)&#xA;&#x9;FOR MeasureNameRename IN (' + @cols2 + ')&#xA;)p'&#xA;&#xA;SET @cols3 = REPLACE(@cols, ']', '_DimensionScore]')&#xA;&#xA;set @query3 = 'SELECT p.ProviderId, p.DataYear, ' + @cols3 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''MId_'' + CAST(mis.[HVBPHCAHPSMeasureId] AS nvarchar) + ''_DimensionScore'' AS MeasureNameRename, DimensionScore&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HVBPHCAHPSScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[HVBPHCAHPSMeasure] m on m.HVBPHCAHPSMeasureId = mis.HVBPHCAHPSMeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(DimensionScore)&#xA;&#x9;FOR MeasureNameRename IN (' + @cols3 + ')&#xA;)p'&#xA;&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vHVBPHCAHPSScorePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + ', ' + @cols2 + ', ' + @cols3 + '&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query2 + ') b ON b.ProviderId = a.ProviderId AND b.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query3 + ') c ON c.ProviderId = a.ProviderId AND c.DataYear = a.DataYear'&#xA;&#xA;&#xA;&#xA;--select @queryfinal&#xA;execute(@queryFinal)&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Load Base Data"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{F79059D5-963E-466B-8609-B8251A256CE3}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Load Base Data"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Load Base Data\HVBPHCAHPS Base Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="HVBPHCAHPS Base Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[HVBPHCAHPSBase]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].Columns[ProviderId]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="ProviderId"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[ProviderId]" />
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].Columns[BaseScore]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="BaseScore"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].ExternalColumns[BaseScore]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[BaseScore]" />
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].Columns[ConsistencyScore]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="ConsistencyScore"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].ExternalColumns[ConsistencyScore]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[ConsistencyScore]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].ExternalColumns[BaseScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="BaseScore" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input].ExternalColumns[ConsistencyScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ConsistencyScore" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Load Base Data\HVBPHCAHPS Base Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="HVBPHCAHPS Base Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">DECLARE @Full AS TABLE
+(
+	ProviderId varchar(10),
+	DataYear int,
+	BaseScore varchar(100),
+	ConsistencyScore varchar(100)
+)
+
+INSERT INTO @Full
+SELECT [Provider Number]
+	  , 2013
+      ,[HCAHPS Base Score]
+      ,[HCAHPS Consistency Score]
+  FROM [HospitalCompareStage].[dbo].[2013_Hvbp_hcahps_05_28_2013]
+UNION
+SELECT [Provider Number]
+	  , 2014
+      ,[HCAHPS Base Score]
+      ,[HCAHPS Consistency Score]
+  FROM [HospitalCompareStage].[dbo].[2014_Hvbp_hcahps_10_28_2014]
+UNION
+SELECT [Provider Number]
+	  , 2015
+      ,[HCAHPS Base Score]
+      ,[HCAHPS Consistency Score]
+  FROM [HospitalCompareStage].[dbo].[2015_Hvbp_hcahps_10_28_2015]
+UNION
+SELECT [Provider Number]
+	  , 2016
+      ,[HCAHPS Base Score]
+      ,[HCAHPS Consistency Score]
+  FROM [HospitalCompareStage].[dbo].[2016_Hvbp_hcahps_06_08_2016]
+
+SELECT f.ProviderId, f.DataYear, f.BaseScore, f.ConsistencyScore From @Full f
+INNER JOIN UNRHealthcareData.dbo.HospitalFactGeneral hfg on hfg.ProviderId = f.ProviderID and hfg.DataYear = f.DataYear
+ORDER BY f.[ProviderId], f.[DataYear]</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Load Base Data\HVBPHCAHPS Base Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      length="10"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      name="ProviderId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[BaseScore]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].ExternalColumns[BaseScore]"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[BaseScore]"
+                      name="BaseScore"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[ConsistencyScore]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].ExternalColumns[ConsistencyScore]"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].Columns[ConsistencyScore]"
+                      name="ConsistencyScore"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].ExternalColumns[BaseScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="BaseScore" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output].ExternalColumns[ConsistencyScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ConsistencyScore" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      name="ProviderId" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[BaseScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[BaseScore]"
+                      name="BaseScore" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[ConsistencyScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[ConsistencyScore]"
+                      name="ConsistencyScore" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Load Base Data\HVBPHCAHPS Score Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="HVBPHCAHPS Score Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[HVBPHCAHPSScore]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].Columns[ProviderId]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="ProviderId"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[ProviderId]" />
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].Columns[AchievementPoints]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="AchievementPoints"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[AchievementPoints]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[AchievementPoints]" />
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].Columns[ImprovementPoints]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="ImprovementPoints"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[ImprovementPoints]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[ImprovementPoints]" />
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].Columns[DimensionScore]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="DimensionScore"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[DimensionScore]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[DimensionScore]" />
+                    <inputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].Columns[HVBPHCAHPSMeasureId]"
+                      cachedDataType="i4"
+                      cachedName="HVBPHCAHPSMeasureId"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[HVBPHCAHPSMeasureId]"
+                      lineageId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Match Output].Columns[HVBPHCAHPSMeasureId]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[HVBPHCAHPSMeasureId]"
+                      dataType="i4"
+                      name="HVBPHCAHPSMeasureId" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[AchievementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="AchievementPoints" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[ImprovementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ImprovementPoints" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[DimensionScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="DimensionScore" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Load Base Data\HVBPHCAHPS Score Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="HVBPHCAHPS Score Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">DECLARE @HVPBHCAHPsData AS TABLE
+(
+	ProviderId varchar(10)
+	, DataYear int
+	, MeasureName varchar(100)
+	, AchievementPoints varchar(100)
+	, ImprovementPoints varchar(100)
+	, DimensionScore varchar(100)
+)
+
+--HVBP HCAHPS
+INSERT INTO @HVPBHCAHPsData
+  SELECT [Provider Number], 2013 AS DataYear, UPPER(LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2)) As MeasureCode, AchievementPoints, ImprovementPoints, DimensionScore
+  FROM 
+	(SELECT [Provider Number], [Communication with Nurses Achievement Points]
+      ,[Communication with Nurses Improvement Points]
+      ,[Communication with Nurses Dimension Score]
+      ,[Communication with Doctors Achievement Points]
+      ,[Communication with Doctors Improvement Points]
+      ,[Communication with Doctors Dimension Score]
+      ,[Responsiveness of Hospital Staff Achievement Points]
+      ,[Responsiveness of Hospital Staff Improvement Points]
+      ,[Responsiveness of Hospital Staff Dimension Score]
+      ,[Pain Management Achievement Points]
+      ,[Pain Management Improvement Points]
+      ,[Pain Management Dimension Score]
+      ,[Communication about Medicines Achievement Points]
+      ,[Communication about Medicines Improvement Points]
+      ,[Communication about Medicines Dimension Score]
+      ,[Cleanliness and Quietness of Hospital Environment Achievement Po]
+      ,[Cleanliness and Quietness of Hospital Environment Improvement Po]
+      ,[Cleanliness and Quietness of Hospital Environment Dimension Scor]
+      ,[Discharge Information Achievement Points]
+      ,[Discharge Information Improvement Points]
+      ,[Discharge Information Dimension Score]
+      ,[Overall Rating of Hospital Achievement Points]
+      ,[Overall Rating of Hospital Improvement Points]
+      ,[Overall Rating of Hospital Dimension Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_hcahps_05_28_2013]) p
+ UNPIVOT
+  (AchievementPoints FOR MeasureCode1 IN ([Communication with Nurses Achievement Points]
+      ,[Communication with Doctors Achievement Points]
+      ,[Responsiveness of Hospital Staff Achievement Points]
+      ,[Pain Management Achievement Points]
+	  ,[Communication about Medicines Achievement Points]
+	  ,[Cleanliness and Quietness of Hospital Environment Achievement Po]
+	  ,[Discharge Information Achievement Points]
+	  ,[Overall Rating of Hospital Achievement Points])) AS a 
+ UNPIVOT
+  (ImprovementPoints FOR MeasureCode2 IN ([Communication with Nurses Improvement Points]
+      ,[Communication with Doctors Improvement Points]
+      ,[Responsiveness of Hospital Staff Improvement Points]
+      ,[Pain Management Improvement Points]
+	  ,[Communication about Medicines Improvement Points]
+	  ,[Cleanliness and Quietness of Hospital Environment Improvement Po]
+	  ,[Discharge Information Improvement Points]
+	  ,[Overall Rating of Hospital Improvement Points])) AS b
+ UNPIVOT
+  (DimensionScore FOR MeasureCode3 IN ([Communication with Nurses Dimension Score]
+      ,[Communication with Doctors Dimension Score]
+      ,[Responsiveness of Hospital Staff Dimension Score]
+      ,[Pain Management Dimension Score]
+	  ,[Communication about Medicines Dimension Score]
+	  ,[Cleanliness and Quietness of Hospital Environment Dimension Scor]
+	  ,[Discharge Information Dimension Score]
+	  ,[Overall Rating of Hospital Dimension Score])) AS c 
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2) = LEFT(MeasureCode2, CHARINDEX('Improvement', MeasureCode2) - 2)
+AND
+	LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2) = LEFT(MeasureCode3, CHARINDEX('Dimension', MeasureCode3) - 2)
+
+INSERT INTO @HVPBHCAHPsData
+  SELECT [Provider Number], 2014 AS DataYear, UPPER(LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2)) As MeasureCode, AchievementPoints, ImprovementPoints, DimensionScore
+  FROM 
+	(SELECT [Provider Number], [Communication with Nurses Achievement Points]
+      ,[Communication with Nurses Improvement Points]
+      ,[Communication with Nurses Dimension Score]
+      ,[Communication with Doctors Achievement Points]
+      ,[Communication with Doctors Improvement Points]
+      ,[Communication with Doctors Dimension Score]
+      ,[Responsiveness of Hospital Staff Achievement Points]
+      ,[Responsiveness of Hospital Staff Improvement Points]
+      ,[Responsiveness of Hospital Staff Dimension Score]
+      ,[Pain Management Achievement Points]
+      ,[Pain Management Improvement Points]
+      ,[Pain Management Dimension Score]
+      ,[Communication about Medicines Achievement Points]
+      ,[Communication about Medicines Improvement Points]
+      ,[Communication about Medicines Dimension Score]
+      ,[Cleanliness and Quietness of Hospital Environment Achievement Po]
+      ,[Cleanliness and Quietness of Hospital Environment Improvement Po]
+      ,[Cleanliness and Quietness of Hospital Environment Dimension Scor]
+      ,[Discharge Information Achievement Points]
+      ,[Discharge Information Improvement Points]
+      ,[Discharge Information Dimension Score]
+      ,[Overall Rating of Hospital Achievement Points]
+      ,[Overall Rating of Hospital Improvement Points]
+      ,[Overall Rating of Hospital Dimension Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_hcahps_10_28_2014]) p
+ UNPIVOT
+  (AchievementPoints FOR MeasureCode1 IN ([Communication with Nurses Achievement Points]
+      ,[Communication with Doctors Achievement Points]
+      ,[Responsiveness of Hospital Staff Achievement Points]
+      ,[Pain Management Achievement Points]
+	  ,[Communication about Medicines Achievement Points]
+	  ,[Cleanliness and Quietness of Hospital Environment Achievement Po]
+	  ,[Discharge Information Achievement Points]
+	  ,[Overall Rating of Hospital Achievement Points])) AS a 
+ UNPIVOT
+  (ImprovementPoints FOR MeasureCode2 IN ([Communication with Nurses Improvement Points]
+      ,[Communication with Doctors Improvement Points]
+      ,[Responsiveness of Hospital Staff Improvement Points]
+      ,[Pain Management Improvement Points]
+	  ,[Communication about Medicines Improvement Points]
+	  ,[Cleanliness and Quietness of Hospital Environment Improvement Po]
+	  ,[Discharge Information Improvement Points]
+	  ,[Overall Rating of Hospital Improvement Points])) AS b
+ UNPIVOT
+  (DimensionScore FOR MeasureCode3 IN ([Communication with Nurses Dimension Score]
+      ,[Communication with Doctors Dimension Score]
+      ,[Responsiveness of Hospital Staff Dimension Score]
+      ,[Pain Management Dimension Score]
+	  ,[Communication about Medicines Dimension Score]
+	  ,[Cleanliness and Quietness of Hospital Environment Dimension Scor]
+	  ,[Discharge Information Dimension Score]
+	  ,[Overall Rating of Hospital Dimension Score])) AS c 
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2) = LEFT(MeasureCode2, CHARINDEX('Improvement', MeasureCode2) - 2)
+AND
+	LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2) = LEFT(MeasureCode3, CHARINDEX('Dimension', MeasureCode3) - 2)
+
+INSERT INTO @HVPBHCAHPsData
+  SELECT [Provider Number], 2015 AS DataYear, UPPER(LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2)) As MeasureCode, AchievementPoints, ImprovementPoints, DimensionScore
+  FROM 
+	(SELECT [Provider Number], [Communication with Nurses Achievement Points]
+      ,[Communication with Nurses Improvement Points]
+      ,[Communication with Nurses Dimension Score]
+      ,[Communication with Doctors Achievement Points]
+      ,[Communication with Doctors Improvement Points]
+      ,[Communication with Doctors Dimension Score]
+      ,[Responsiveness of Hospital Staff Achievement Points]
+      ,[Responsiveness of Hospital Staff Improvement Points]
+      ,[Responsiveness of Hospital Staff Dimension Score]
+      ,[Pain Management Achievement Points]
+      ,[Pain Management Improvement Points]
+      ,[Pain Management Dimension Score]
+      ,[Communication about Medicines Achievement Points]
+      ,[Communication about Medicines Improvement Points]
+      ,[Communication about Medicines Dimension Score]
+      ,[Cleanliness and Quietness of Hospital Environment Achievement Po]
+      ,[Cleanliness and Quietness of Hospital Environment Improvement Po]
+      ,[Cleanliness and Quietness of Hospital Environment Dimension Scor]
+      ,[Discharge Information Achievement Points]
+      ,[Discharge Information Improvement Points]
+      ,[Discharge Information Dimension Score]
+      ,[Overall Rating of Hospital Achievement Points]
+      ,[Overall Rating of Hospital Improvement Points]
+      ,[Overall Rating of Hospital Dimension Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_hcahps_10_28_2015]) p
+ UNPIVOT
+  (AchievementPoints FOR MeasureCode1 IN ([Communication with Nurses Achievement Points]
+      ,[Communication with Doctors Achievement Points]
+      ,[Responsiveness of Hospital Staff Achievement Points]
+      ,[Pain Management Achievement Points]
+	  ,[Communication about Medicines Achievement Points]
+	  ,[Cleanliness and Quietness of Hospital Environment Achievement Po]
+	  ,[Discharge Information Achievement Points]
+	  ,[Overall Rating of Hospital Achievement Points])) AS a 
+ UNPIVOT
+  (ImprovementPoints FOR MeasureCode2 IN ([Communication with Nurses Improvement Points]
+      ,[Communication with Doctors Improvement Points]
+      ,[Responsiveness of Hospital Staff Improvement Points]
+      ,[Pain Management Improvement Points]
+	  ,[Communication about Medicines Improvement Points]
+	  ,[Cleanliness and Quietness of Hospital Environment Improvement Po]
+	  ,[Discharge Information Improvement Points]
+	  ,[Overall Rating of Hospital Improvement Points])) AS b
+ UNPIVOT
+  (DimensionScore FOR MeasureCode3 IN ([Communication with Nurses Dimension Score]
+      ,[Communication with Doctors Dimension Score]
+      ,[Responsiveness of Hospital Staff Dimension Score]
+      ,[Pain Management Dimension Score]
+	  ,[Communication about Medicines Dimension Score]
+	  ,[Cleanliness and Quietness of Hospital Environment Dimension Scor]
+	  ,[Discharge Information Dimension Score]
+	  ,[Overall Rating of Hospital Dimension Score])) AS c 
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2) = LEFT(MeasureCode2, CHARINDEX('Improvement', MeasureCode2) - 2)
+AND
+	LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2) = LEFT(MeasureCode3, CHARINDEX('Dimension', MeasureCode3) - 2)
+
+INSERT INTO @HVPBHCAHPsData
+  SELECT [Provider Number], 2016 AS DataYear, UPPER(LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2)) As MeasureCode, AchievementPoints, ImprovementPoints, DimensionScore
+  FROM 
+	(SELECT [Provider Number], [Communication with Nurses Achievement Points]
+      ,[Communication with Nurses Improvement Points]
+      ,[Communication with Nurses Dimension Score]
+      ,[Communication with Doctors Achievement Points]
+      ,[Communication with Doctors Improvement Points]
+      ,[Communication with Doctors Dimension Score]
+      ,[Responsiveness of Hospital Staff Achievement Points]
+      ,[Responsiveness of Hospital Staff Improvement Points]
+      ,[Responsiveness of Hospital Staff Dimension Score]
+      ,[Pain Management Achievement Points]
+      ,[Pain Management Improvement Points]
+      ,[Pain Management Dimension Score]
+      ,[Communication about Medicines Achievement Points]
+      ,[Communication about Medicines Improvement Points]
+      ,[Communication about Medicines Dimension Score]
+      ,[Cleanliness and Quietness of Hospital Environment Achievement Po]
+      ,[Cleanliness and Quietness of Hospital Environment Improvement Po]
+      ,[Cleanliness and Quietness of Hospital Environment Dimension Scor]
+      ,[Discharge Information Achievement Points]
+      ,[Discharge Information Improvement Points]
+      ,[Discharge Information Dimension Score]
+      ,[Overall Rating of Hospital Achievement Points]
+      ,[Overall Rating of Hospital Improvement Points]
+      ,[Overall Rating of Hospital Dimension Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_hcahps_06_08_2016]) p
+ UNPIVOT
+  (AchievementPoints FOR MeasureCode1 IN ([Communication with Nurses Achievement Points]
+      ,[Communication with Doctors Achievement Points]
+      ,[Responsiveness of Hospital Staff Achievement Points]
+      ,[Pain Management Achievement Points]
+	  ,[Communication about Medicines Achievement Points]
+	  ,[Cleanliness and Quietness of Hospital Environment Achievement Po]
+	  ,[Discharge Information Achievement Points]
+	  ,[Overall Rating of Hospital Achievement Points])) AS a 
+ UNPIVOT
+  (ImprovementPoints FOR MeasureCode2 IN ([Communication with Nurses Improvement Points]
+      ,[Communication with Doctors Improvement Points]
+      ,[Responsiveness of Hospital Staff Improvement Points]
+      ,[Pain Management Improvement Points]
+	  ,[Communication about Medicines Improvement Points]
+	  ,[Cleanliness and Quietness of Hospital Environment Improvement Po]
+	  ,[Discharge Information Improvement Points]
+	  ,[Overall Rating of Hospital Improvement Points])) AS b
+ UNPIVOT
+  (DimensionScore FOR MeasureCode3 IN ([Communication with Nurses Dimension Score]
+      ,[Communication with Doctors Dimension Score]
+      ,[Responsiveness of Hospital Staff Dimension Score]
+      ,[Pain Management Dimension Score]
+	  ,[Communication about Medicines Dimension Score]
+	  ,[Cleanliness and Quietness of Hospital Environment Dimension Scor]
+	  ,[Discharge Information Dimension Score]
+	  ,[Overall Rating of Hospital Dimension Score])) AS c 
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2) = LEFT(MeasureCode2, CHARINDEX('Improvement', MeasureCode2) - 2)
+AND
+	LEFT(MeasureCode1, CHARINDEX('Achievement', MeasureCode1) - 2) = LEFT(MeasureCode3, CHARINDEX('Dimension', MeasureCode3) - 2)
+
+
+SELECT f.ProviderId, f.DataYear, f.MeasureName, f.AchievementPoints, f.ImprovementPoints, f.DimensionScore From @HVPBHCAHPsData f
+INNER JOIN UNRHealthcareData.dbo.HospitalFactGeneral hfg on hfg.ProviderId = f.ProviderID and hfg.DataYear = f.DataYear
+ORDER BY f.[ProviderId], f.[DataYear], f.MeasureName</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Load Base Data\HVBPHCAHPS Score Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      length="10"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      name="ProviderId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[MeasureName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureName]"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[MeasureName]"
+                      name="MeasureName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[AchievementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[AchievementPoints]"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[AchievementPoints]"
+                      name="AchievementPoints"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[ImprovementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[ImprovementPoints]"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[ImprovementPoints]"
+                      name="ImprovementPoints"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[DimensionScore]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[DimensionScore]"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[DimensionScore]"
+                      name="DimensionScore"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureName" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[AchievementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="AchievementPoints" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[ImprovementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ImprovementPoints" />
+                    <externalMetadataColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].ExternalColumns[DimensionScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="DimensionScore" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      name="ProviderId" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureName]"
+                      name="MeasureName" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[AchievementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[AchievementPoints]"
+                      name="AchievementPoints" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[ImprovementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[ImprovementPoints]"
+                      name="ImprovementPoints" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[DimensionScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[DimensionScore]"
+                      name="DimensionScore" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup HVBPHCAHPSMeasureId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[HVBPHCAHPSMeasure]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[HVBPHCAHPSMeasure]) [refTable]
+where [refTable].[MeasureName] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="HVBPHCAHPSMeasureId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="MeasureName" dataType="DT_STR" length="255" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[MeasureName]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Inputs[Lookup Input].Columns[MeasureName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="MeasureName"
+                      lineageId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output].Columns[MeasureName]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">MeasureName</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Match Output].Columns[HVBPHCAHPSMeasureId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Match Output].Columns[HVBPHCAHPSMeasureId]"
+                      name="HVBPHCAHPSMeasureId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">HVBPHCAHPSMeasureId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Load Base Data.Paths[Lookup Match Output]"
+              endId="Package\Load Base Data\HVBPHCAHPS Score Destination.Inputs[OLE DB Destination Input]"
+              name="Lookup Match Output"
+              startId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Load Base Data.Paths[OLE DB Source Output]"
+              endId="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId.Inputs[Lookup Input]"
+              name="OLE DB Source Output"
+              startId="Package\Load Base Data\HVBPHCAHPS Score Source.Outputs[OLE DB Source Output]" />
+            <path
+              refId="Package\Load Base Data.Paths[OLE DB Source Output1]"
+              endId="Package\Load Base Data\HVBPHCAHPS Base Destination.Inputs[OLE DB Destination Input]"
+              name="OLE DB Source Output"
+              startId="Package\Load Base Data\HVBPHCAHPS Base Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{387A2E91-5684-487E-908B-E6AC996BDB6D}"
+      DTS:From="Package\Load Base Data"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\CREATE HVBPHCAHPSScore View" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="239,42"
+          Id="Package\CREATE HVBPHCAHPSScore View"
+          TopLeft="226,238" />
+        <NodeLayout
+          Size="155,42"
+          Id="Package\Load Base Data"
+          TopLeft="114,92" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="191.5,134">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="154,104"
+              Start="0,0"
+              End="154,96.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,48" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,48"
+                    Point2="0,52"
+                    Point3="4,52" />
+                  <mssgle:LineSegment
+                    End="150,52" />
+                  <mssgle:CubicBezierSegment
+                    Point1="150,52"
+                    Point2="154,52"
+                    Point3="154,56" />
+                  <mssgle:LineSegment
+                    End="154,96.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Load Base Data">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="211,42"
+          Id="Package\Load Base Data\HVBPHCAHPS Score Source"
+          TopLeft="212,342" />
+        <NodeLayout
+          Size="233,42"
+          Id="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId"
+          TopLeft="208,479" />
+        <NodeLayout
+          Size="207,42"
+          Id="Package\Load Base Data\HVBPHCAHPS Base Source"
+          TopLeft="147,76" />
+        <NodeLayout
+          Size="231,42"
+          Id="Package\Load Base Data\HVBPHCAHPS Score Destination"
+          TopLeft="221,676" />
+        <NodeLayout
+          Size="228,42"
+          Id="Package\Load Base Data\HVBPHCAHPS Base Destination"
+          TopLeft="169,201" />
+        <EdgeLayout
+          Id="Package\Load Base Data.Paths[OLE DB Source Output1]"
+          TopLeft="250.5,118">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="32.5,83"
+              Start="0,0"
+              End="32.5,75.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,37.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,37.5"
+                    Point2="0,41.5"
+                    Point3="4,41.5" />
+                  <mssgle:LineSegment
+                    End="28.5,41.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="28.5,41.5"
+                    Point2="32.5,41.5"
+                    Point3="32.5,45.5" />
+                  <mssgle:LineSegment
+                    End="32.5,75.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Load Base Data.Paths[OLE DB Source Output]"
+          TopLeft="321,384">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,95"
+              Start="0,0"
+              End="0,87.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,87.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Load Base Data.Paths[Lookup Match Output]"
+          TopLeft="324.5,521">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="12,155"
+              Start="0,0"
+              End="12,147.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,73.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,73.5"
+                    Point2="0,77.5"
+                    Point3="4,77.5" />
+                  <mssgle:LineSegment
+                    End="8,77.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="8,77.5"
+                    Point2="12,77.5"
+                    Point3="12,81.5" />
+                  <mssgle:LineSegment
+                    End="12,147.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-42.19138671875,82.5,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Base Data\HVBPHCAHPS Base Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Base Data\HVBPHCAHPS Score Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Base Data\Lookup HVBPHCAHPSMeasureId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[HVBPHCAHPSMeasure]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Base Data\HVBPHCAHPS Base Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Base Data\HVBPHCAHPS Score Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

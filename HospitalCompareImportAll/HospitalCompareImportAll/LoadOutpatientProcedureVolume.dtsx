@@ -1,0 +1,1144 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="2/14/2017 12:38:41 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{831AAB7B-792B-44F7-9F4D-FDC721F617D3}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadOutpatientProcedureVolume"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="8"
+  DTS:VersionGUID="{62681881-0389-4B4E-92B3-5CD15C41ACBE}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\CREATE OutpatientProcedureVolumePivot View"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{4DE34B42-D95A-4D4D-BAE5-8D97632FCEBC}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="CREATE OutpatientProcedureVolumePivot View"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vOutpatientProcedureVolumePivot', 'V') IS NOT NULL&#xA;DROP VIEW vOutpatientProcedureVolumePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME('MId_' + CAST(mis.[MeasureId] AS nvarchar) + '_PTId_' + CAST(mis.[ProcedureTypeId] AS nvarchar)) &#xA;                    FROM [UNRHealthcareData].[dbo].[OutpatientProcedureVolume] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[ProcedureType] n on n.ProcedureTypeId = mis.ProcedureTypeId&#xA;                    group by mis.[MeasureId], mis.ProcedureTypeId&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;SET @cols1 = REPLACE(@cols, ']', '_ProcedureVolume]')&#xA;&#xA;--select @cols1&#xA;&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''MId_'' + CAST(mis.[MeasureId] AS nvarchar) + ''_PTId_'' + CAST(mis.[ProcedureTypeId] AS nvarchar) + ''_ProcedureVolume'' AS CompoundIdRename, ProcedureVolume&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[OutpatientProcedureVolume] mis&#x9;&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[Measure] m on m.MeasureId = mis.MeasureId&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[ProcedureType] n on n.ProcedureTypeId = mis.ProcedureTypeId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(ProcedureVolume)&#xA;&#x9;FOR CompoundIdRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;--select @query1&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vOutpatientProcedureVolumePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + ' &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a'&#xA;&#xA;--select @queryfinal&#xA;execute(@queryFinal)&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Populate Data Tables"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{0A03781D-CA5B-40AB-A5A4-37D5870C3C27}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Populate Data Tables"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Populate Data Tables\Lookup MeasureId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup MeasureId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[Measure]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[Measure]) [refTable]
+where [refTable].[MeasureCode] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="MeasureId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="MeasureCode" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;referenceColumn name="MeasureName" dataType="DT_STR" length="255" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureCode]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input].Columns[MeasureCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="MeasureCode"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureCode]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">MeasureCode</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      name="MeasureId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">MeasureId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Data Tables\Lookup ProcedureTypeId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup ProcedureTypeId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[ProcedureType]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[ProcedureType]) [refTable]
+where [refTable].[ProcedureType] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="ProcedureTypeId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="ProcedureType" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProcedureType]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Inputs[Lookup Input].Columns[ProcedureType]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="8000"
+                      cachedName="ProcedureType"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProcedureType]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">ProcedureType</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup ProcedureTypeId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Match Output].Columns[ProcedureTypeId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Match Output].Columns[ProcedureTypeId]"
+                      name="ProcedureTypeId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">ProcedureTypeId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup ProcedureTypeId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup ProcedureTypeId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="OutpatientProcedureVolume Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[OutpatientProcedureVolume]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].Columns[ProviderId]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="ProviderId"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProviderId]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].Columns[ProcedureVolume]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="ProcedureVolume"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProcedureVolume]"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProcedureVolume]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].Columns[MeasureStartDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="MeasureStartDate"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].Columns[MeasureEndDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="MeasureEndDate"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].Columns[MeasureId]"
+                      cachedDataType="i4"
+                      cachedName="MeasureId"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].Columns[ProcedureTypeId]"
+                      cachedDataType="i4"
+                      cachedName="ProcedureTypeId"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProcedureTypeId]"
+                      lineageId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Match Output].Columns[ProcedureTypeId]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      dataType="i4"
+                      name="MeasureId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProcedureTypeId]"
+                      dataType="i4"
+                      name="ProcedureTypeId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProcedureVolume]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ProcedureVolume" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Data Tables\OutpatientProcedureVolume Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="OutpatientProcedureVolume Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">DECLARE @Full AS TABLE
+(
+ ProviderId varchar(10),
+ DataYear int,
+ MeasureCode varchar(100),
+ ProcedureType varchar(100),
+ ProcedureVolume varchar(100),
+ MeasureStartDate datetime,
+ MeasureEndDate datetime
+)
+INSERT INTO @Full
+SELECT Provider_ID, 2014 AS DataYear, Measure_ID, ProcedureType, ProcedureVolume, Start_Date, End_Date
+  FROM 
+	(SELECT Provider_ID, Measure_ID 
+	  ,[Gastrointestinal]
+      ,[Eye]
+      ,[Nervous_system]
+      ,[Musculoskeletal]
+      ,[Skin]
+      ,[Genitourinary]
+      ,[Cardiovascular], START_DATE, END_DATE FROM [HospitalCompareStage].[dbo].[2014_HQI_OP_Procedure_Volume]) p
+ UNPIVOT
+  (ProcedureVolume FOR ProcedureType IN ([Gastrointestinal]
+      ,[Eye]
+      ,[Nervous_system]
+      ,[Musculoskeletal]
+      ,[Skin]
+      ,[Genitourinary]
+      ,[Cardiovascular])) AS unpvt 
+UNION
+SELECT Provider_ID, 2015 As DataYear, Measure_ID, ProcedureType, ProcedureVolume, Start_Date, End_Date
+  FROM 
+	(SELECT Provider_ID, Measure_ID 
+	  ,[Gastrointestinal]
+      ,[Eye]
+      ,[Nervous_System]
+      ,[Musculoskeletal]
+      ,[Skin]
+      ,[Genitourinary]
+      ,[Cardiovascular]
+      ,[Respiratory]
+      ,[Other], START_DATE, END_DATE FROM [HospitalCompareStage].[dbo].[2015_HQI_OP_Procedure_Volume]) p
+ UNPIVOT
+  (ProcedureVolume FOR ProcedureType IN ([Gastrointestinal]
+      ,[Eye]
+      ,[Nervous_System]
+      ,[Musculoskeletal]
+      ,[Skin]
+      ,[Genitourinary]
+      ,[Cardiovascular]
+      ,[Respiratory]
+      ,[Other])) AS unpvt
+UNION
+SELECT Provider_ID, 2016 As DataYear, Measure_ID, ProcedureType, ProcedureVolume, Start_Date, End_Date
+  FROM 
+	(SELECT Provider_ID, Measure_ID 
+	  ,[Gastrointestinal]
+      ,[Eye]
+      ,[Nervous System]
+      ,[Musculoskeletal]
+      ,[Skin]
+      ,[Genitourinary]
+      ,[Cardiovascular]
+      ,[Respiratory]
+      ,[Other], START_DATE, END_DATE FROM [HospitalCompareStage].[dbo].[2016_HQI_OP_Procedure_Volume]) p
+ UNPIVOT
+  (ProcedureVolume FOR ProcedureType IN ([Gastrointestinal]
+      ,[Eye]
+      ,[Nervous System]
+      ,[Musculoskeletal]
+      ,[Skin]
+      ,[Genitourinary]
+      ,[Cardiovascular]
+      ,[Respiratory]
+      ,[Other])) AS unpvt 
+	  
+SELECT f.ProviderId, f.DataYear, REPLACE([MeasureCode], '-', '_') AS [MeasureCode], UPPER(RTRIM(LTRIM(REPLACE(ProcedureType, '_', ' ')))) AS ProcedureType, ProcedureVolume, MeasureStartDate, MeasureEndDate FROM @Full f
+INNER JOIN UNRHealthcareData.dbo.HospitalFactGeneral hfg on hfg.ProviderId = f.ProviderID and hfg.DataYear = f.DataYear
+ORDER BY [ProviderId], [DataYear]</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      name="ProviderId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      name="MeasureCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProcedureVolume]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[ProcedureVolume]"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProcedureVolume]"
+                      name="ProcedureVolume"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProcedureType]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[ProcedureType]"
+                      length="8000"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].Columns[ProcedureType]"
+                      name="ProcedureType"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="8000"
+                      name="MeasureCode" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[ProcedureVolume]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ProcedureVolume" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureStartDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      name="MeasureEndDate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output].ExternalColumns[ProcedureType]"
+                      codePage="1252"
+                      dataType="str"
+                      length="8000"
+                      name="ProcedureType" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      name="ProviderId" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="8000"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      name="MeasureCode" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ProcedureType]"
+                      codePage="1252"
+                      dataType="str"
+                      length="8000"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ProcedureType]"
+                      name="ProcedureType" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ProcedureVolume]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ProcedureVolume]"
+                      name="ProcedureVolume" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[MeasureStartDate]"
+                      name="MeasureStartDate" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[MeasureEndDate]"
+                      name="MeasureEndDate" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Populate Data Tables.Paths[Lookup Match Output]"
+              endId="Package\Populate Data Tables\Lookup ProcedureTypeId.Inputs[Lookup Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate Data Tables.Paths[Lookup Match Output1]"
+              endId="Package\Populate Data Tables\OutpatientProcedureVolume Destination.Inputs[OLE DB Destination Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate Data Tables\Lookup ProcedureTypeId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate Data Tables.Paths[OLE DB Source Output]"
+              endId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]"
+              name="OLE DB Source Output"
+              startId="Package\Populate Data Tables\OutpatientProcedureVolume Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{B2C67FB7-03B0-464A-9CA3-D1E4CBD3AEA1}"
+      DTS:From="Package\Populate Data Tables"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\CREATE OutpatientProcedureVolumePivot View" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="303,42"
+          Id="Package\CREATE OutpatientProcedureVolumePivot View"
+          TopLeft="93,172" />
+        <NodeLayout
+          Size="181,42"
+          Id="Package\Populate Data Tables"
+          TopLeft="105,59" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="195.5,101">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="49,71"
+              Start="0,0"
+              End="49,63.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,31.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,31.5"
+                    Point2="0,35.5"
+                    Point3="4,35.5" />
+                  <mssgle:LineSegment
+                    End="45,35.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="45,35.5"
+                    Point2="49,35.5"
+                    Point3="49,39.5" />
+                  <mssgle:LineSegment
+                    End="49,63.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Populate Data Tables">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="199,42"
+          Id="Package\Populate Data Tables\Lookup ProcedureTypeId"
+          TopLeft="207,280" />
+        <NodeLayout
+          Size="269,42"
+          Id="Package\Populate Data Tables\OutpatientProcedureVolume Destination"
+          TopLeft="197,402" />
+        <NodeLayout
+          Size="168,42"
+          Id="Package\Populate Data Tables\Lookup MeasureId"
+          TopLeft="148,163" />
+        <NodeLayout
+          Size="249,42"
+          Id="Package\Populate Data Tables\OutpatientProcedureVolume Source"
+          TopLeft="104,62" />
+        <EdgeLayout
+          Id="Package\Populate Data Tables.Paths[OLE DB Source Output]"
+          TopLeft="230.25,104">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,59"
+              Start="0,0"
+              End="0,51.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,51.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate Data Tables.Paths[Lookup Match Output1]"
+          TopLeft="306.5,322">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="25,80"
+              Start="0,0"
+              End="25,72.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,36" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,36"
+                    Point2="0,40"
+                    Point3="4,40" />
+                  <mssgle:LineSegment
+                    End="21,40" />
+                  <mssgle:CubicBezierSegment
+                    Point1="21,40"
+                    Point2="25,40"
+                    Point3="25,44" />
+                  <mssgle:LineSegment
+                    End="25,72.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-35.69138671875,45,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate Data Tables.Paths[Lookup Match Output]"
+          TopLeft="232,205">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="74.5,75"
+              Start="0,0"
+              End="74.5,67.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,33.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,33.5"
+                    Point2="0,37.5"
+                    Point3="4,37.5" />
+                  <mssgle:LineSegment
+                    End="70.5,37.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="70.5,37.5"
+                    Point2="74.5,37.5"
+                    Point3="74.5,41.5" />
+                  <mssgle:LineSegment
+                    End="74.5,67.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-10.94138671875,42.5,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\Lookup ProcedureTypeId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[ProcedureType]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\OutpatientProcedureVolume Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\Lookup MeasureId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[Measure]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\OutpatientProcedureVolume Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

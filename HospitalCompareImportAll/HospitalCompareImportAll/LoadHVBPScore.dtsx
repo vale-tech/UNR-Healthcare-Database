@@ -1,0 +1,1819 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="2/16/2017 1:24:55 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="FROZEN-FORTRESS"
+  DTS:CreatorName="Frozen-Fortress\Vale"
+  DTS:DTSID="{5018E0DF-8F8C-4C86-92C3-4285FC82D2D8}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadHVBPScore"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="14"
+  DTS:VersionGUID="{43B8B97E-D26E-4BEB-A46A-4A17DB743DAC}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Create HVBPScorePivot View"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{3AF39A48-DEE2-4FB9-B5FA-07A2586ABADA}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Create HVBPScorePivot View"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{519027B6-004D-431F-A052-1086E046AF88}"
+          SQLTask:SqlStatementSource="USE [UNRHealthCareData]&#xA;&#xA;DECLARE&#x9;&#xA;@cols AS NVARCHAR(MAX)&#xA;, @cols1 AS NVARCHAR(MAX)&#xA;, @cols2 AS NVARCHAR(MAX)&#xA;, @cols3 AS NVARCHAR(MAX)&#xA;, @cols4 AS NVARCHAR(MAX)&#xA;, @cols5 AS NVARCHAR(MAX)&#xA;, @query1 AS NVARCHAR(MAX)&#xA;, @query2 AS NVARCHAR(MAX)&#xA;, @query3 AS NVARCHAR(MAX)&#xA;, @query4 AS NVARCHAR(MAX)&#xA;, @query5 AS NVARCHAR(MAX)&#xA;, @queryFinal AS NVARCHAR(MAX)&#xA;&#xA;IF OBJECT_ID('vHVBPHCAHPSScorePivot', 'V') IS NOT NULL&#xA;DROP VIEW vHVBPHCAHPSScorePivot;&#xA;&#xA;select @cols = STUFF((SELECT ',' + QUOTENAME('MId_' + CAST(mis.[HVBPHCAHPSMeasureId] AS nvarchar)) &#xA;                    FROM [UNRHealthcareData].[dbo].[HVBPHCAHPSScore] mis&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[HVBPHCAHPSMeasure] m on m.HVBPHCAHPSMeasureId = mis.HVBPHCAHPSMeasureId&#xA;                    group by mis.[HVBPHCAHPSMeasureId]&#xA;            FOR XML PATH(''), TYPE&#xA;            ).value('.', 'NVARCHAR(MAX)') &#xA;        ,1,1,'')&#xA;&#xA;SET @cols1 = REPLACE(@cols, ']', '_AchievementPoints]')&#xA;&#xA;set @query1 = 'SELECT p.ProviderId, p.DataYear, ' + @cols1 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''MId_'' + CAST(mis.[HVBPHCAHPSMeasureId] AS nvarchar) + ''_AchievementPoints'' AS MeasureNameRename, AchievementPoints&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HVBPHCAHPSScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[HVBPHCAHPSMeasure] m on m.HVBPHCAHPSMeasureId = mis.HVBPHCAHPSMeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(AchievementPoints)&#xA;&#x9;FOR MeasureNameRename IN (' + @cols1 + ')&#xA;)p'&#xA;&#xA;--select @query1&#xA;&#xA;SET @cols2 = REPLACE(@cols, ']', '_ImprovementPoints]')&#xA;&#xA;set @query2 = 'SELECT p.ProviderId, p.DataYear, ' + @cols2 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''MId_'' + CAST(mis.[HVBPHCAHPSMeasureId] AS nvarchar) + ''_ImprovementPoints'' AS MeasureNameRename, ImprovementPoints&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HVBPHCAHPSScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[HVBPHCAHPSMeasure] m on m.HVBPHCAHPSMeasureId = mis.HVBPHCAHPSMeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(ImprovementPoints)&#xA;&#x9;FOR MeasureNameRename IN (' + @cols2 + ')&#xA;)p'&#xA;&#xA;SET @cols3 = REPLACE(@cols, ']', '_DimensionScore]')&#xA;&#xA;set @query3 = 'SELECT p.ProviderId, p.DataYear, ' + @cols3 + '&#xA;FROM&#xA;(&#xA;&#x9;SELECT ProviderId, DataYear, ''MId_'' + CAST(mis.[HVBPHCAHPSMeasureId] AS nvarchar) + ''_DimensionScore'' AS MeasureNameRename, DimensionScore&#xA;&#x9;FROM [UNRHealthcareData].[dbo].[HVBPHCAHPSScore] mis&#xA;&#x9;INNER JOIN [UNRHealthcareData].[dbo].[HVBPHCAHPSMeasure] m on m.HVBPHCAHPSMeasureId = mis.HVBPHCAHPSMeasureId&#xA;) x&#xA;PIVOT&#xA;(&#xA;&#x9;MAX(DimensionScore)&#xA;&#x9;FOR MeasureNameRename IN (' + @cols3 + ')&#xA;)p'&#xA;&#xA;&#xA;SET @queryFinal = 'CREATE VIEW vHVBPHCAHPSScorePivot AS&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;SELECT a.ProviderId, a.DataYear, ' + @cols1 + ', ' + @cols2 + ', ' + @cols3 + '&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;FROM (' + @query1 + ') a &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query2 + ') b ON b.ProviderId = a.ProviderId AND b.DataYear = a.DataYear&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;INNER JOIN (' + @query3 + ') c ON c.ProviderId = a.ProviderId AND c.DataYear = a.DataYear'&#xA;&#xA;&#xA;&#xA;--select @queryfinal&#xA;execute(@queryFinal)&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Populate Data Tables"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{FD6788CD-9820-46B7-9E7C-98D5238BD651}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Populate Data Tables"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Populate Data Tables\HVBP Score Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="HVBP Score Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[HVBPScore]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">0</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\HVBP Score Destination.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].Columns[ProviderId]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="ProviderId"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[ProviderId]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].Columns[DataYear]"
+                      cachedDataType="i4"
+                      cachedName="DataYear"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[DataYear]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].Columns[PerformanceRate]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="PerformanceRate"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[PerformanceRate]"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[PerformanceRate]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].Columns[AchievementPoints]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="AchievementPoints"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[AchievementPoints]"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[AchievementPoints]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].Columns[ImprovementPoints]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="ImprovementPoints"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[ImprovementPoints]"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[ImprovementPoints]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].Columns[MeasureScore]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="MeasureScore"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureScore]"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[MeasureScore]" />
+                    <inputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].Columns[MeasureId]"
+                      cachedDataType="i4"
+                      cachedName="MeasureId"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[PerformanceRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="PerformanceRate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[AchievementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="AchievementPoints" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureId]"
+                      dataType="i4"
+                      name="MeasureId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[ImprovementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ImprovementPoints" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input].ExternalColumns[MeasureScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureScore" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\HVBP Score Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\HVBP Score Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\HVBP Score Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Data Tables\HVBP Score Source"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="HVBP Score Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">DECLARE @HVPBData AS TABLE
+(
+	ProviderId varchar(10)
+	, DataYear int
+	, MeasureCode varchar(100)
+	, PerformanceRate varchar(100)
+	, AchievementPoints varchar(100)
+	, ImprovementPoints varchar(100)
+	, MeasureScore varchar(100)
+)
+
+--HAI
+INSERT INTO @HVPBData
+  SELECT [Provider Number], 2013 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP-Inf-1 Performance Rate]
+      ,[SCIP-Inf-2 Performance Rate]
+      ,[SCIP-Inf-3 Performance Rate]
+      ,[SCIP-Inf-4 Performance Rate]
+	  ,[SCIP-Inf-1 Achievement Points]
+      ,[SCIP-Inf-2 Achievement Points]
+      ,[SCIP-Inf-3 Achievement Points]
+      ,[SCIP-Inf-4 Achievement Points]
+	  ,[SCIP-Inf-1 Improvement Points]
+      ,[SCIP-Inf-2 Improvement Points]
+      ,[SCIP-Inf-3 Improvement Points]
+      ,[SCIP-Inf-4 Improvement Points]
+	  ,[SCIP-Inf-1 Measure Score]
+      ,[SCIP-Inf-2 Measure Score]
+      ,[SCIP-Inf-3 Measure Score]
+      ,[SCIP-Inf-4 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_hai_05_28_2013]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([SCIP-Inf-1 Performance Rate]
+      ,[SCIP-Inf-2 Performance Rate]
+      ,[SCIP-Inf-3 Performance Rate]
+      ,[SCIP-Inf-4 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([SCIP-Inf-1 Achievement Points]
+      ,[SCIP-Inf-2 Achievement Points]
+      ,[SCIP-Inf-3 Achievement Points]
+      ,[SCIP-Inf-4 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([SCIP-Inf-1 Improvement Points]
+      ,[SCIP-Inf-2 Improvement Points]
+      ,[SCIP-Inf-3 Improvement Points]
+      ,[SCIP-Inf-4 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([SCIP-Inf-1 Measure Score]
+      ,[SCIP-Inf-2 Measure Score]
+      ,[SCIP-Inf-3 Measure Score]
+      ,[SCIP-Inf-4 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4)) 
+UNION
+SELECT [Provider Number], 2014 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX('_', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP-Inf-1_Performance Rate]
+      ,[SCIP-Inf-2_Performance Rate]
+      ,[SCIP-Inf-3_Performance Rate]
+      ,[SCIP-Inf-4_Performance Rate]
+	  ,[SCIP-Inf-9_Performance Rate]
+	  ,[SCIP-Inf-1_Achievement Points]
+      ,[SCIP-Inf-2_Achievement Points]
+      ,[SCIP-Inf-3_Achievement Points]
+      ,[SCIP-Inf-4_Achievement Points]
+	  ,[SCIP-Inf-9_Achievement Points]
+	  ,[SCIP-Inf-1_Improvement Points]
+      ,[SCIP-Inf-2_Improvement Points]
+      ,[SCIP-Inf-3_Improvement Points]
+      ,[SCIP-Inf-4_Improvement Points]
+	  ,[SCIP-Inf-9_Improvement Points]
+	  ,[SCIP-Inf-1_Measure Score]
+      ,[SCIP-Inf-2_Measure Score]
+      ,[SCIP-Inf-3_Measure Score]
+      ,[SCIP-Inf-4_Measure Score]
+	  ,[Scip-Inf-9_Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_hai_10_28_2014]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([SCIP-Inf-1_Performance Rate]
+      ,[SCIP-Inf-2_Performance Rate]
+      ,[SCIP-Inf-3_Performance Rate]
+      ,[SCIP-Inf-4_Performance Rate]
+	  ,[SCIP-Inf-9_Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([SCIP-Inf-1_Achievement Points]
+      ,[SCIP-Inf-2_Achievement Points]
+      ,[SCIP-Inf-3_Achievement Points]
+      ,[SCIP-Inf-4_Achievement Points]
+	  ,[SCIP-Inf-9_Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([SCIP-Inf-1_Improvement Points]
+      ,[SCIP-Inf-2_Improvement Points]
+      ,[SCIP-Inf-3_Improvement Points]
+      ,[SCIP-Inf-4_Improvement Points]
+	  ,[SCIP-Inf-9_Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([SCIP-Inf-1_Measure Score]
+      ,[SCIP-Inf-2_Measure Score]
+      ,[SCIP-Inf-3_Measure Score]
+      ,[SCIP-Inf-4_Measure Score]
+	  ,[SCIP-Inf-9_Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX('_', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX('_', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX('_', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX('_', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX('_', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX('_', MeasureCode4))
+UNION
+SELECT [Provider Number], 2015 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP-Inf-2 Performance Rate]
+      ,[SCIP-Inf-3 Performance Rate]
+      ,[SCIP-Inf-9 Performance Rate]
+      ,[SCIP-Inf-2 Achievement Points]
+      ,[SCIP-Inf-3 Achievement Points]
+      ,[SCIP-Inf-9 Achievement Points]
+      ,[SCIP-Inf-2 Improvement Points]
+      ,[SCIP-Inf-3 Improvement Points]
+      ,[SCIP-Inf-9 Improvement Points]
+      ,[SCIP-Inf-2 Measure Score]
+      ,[SCIP-Inf-3 Measure Score]
+      ,[SCIP-Inf-9 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_hai_10_28_2015]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([SCIP-Inf-2 Performance Rate]
+      ,[SCIP-Inf-3 Performance Rate]
+      ,[SCIP-Inf-9 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([SCIP-Inf-2 Achievement Points]
+      ,[SCIP-Inf-3 Achievement Points]
+      ,[SCIP-Inf-9 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([SCIP-Inf-2 Improvement Points]
+      ,[SCIP-Inf-3 Improvement Points]
+      ,[SCIP-Inf-9 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([SCIP-Inf-2 Measure Score]
+      ,[SCIP-Inf-3 Measure Score]
+      ,[SCIP-Inf-9 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4)) 
+UNION
+SELECT [Provider Number], 2016 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP-Inf-2 Performance Rate]
+      ,[SCIP-Inf-3 Performance Rate]
+      ,[SCIP-Inf-9 Performance Rate]
+      ,[SCIP-Inf-2 Achievement Points]
+      ,[SCIP-Inf-3 Achievement Points]
+      ,[SCIP-Inf-9 Achievement Points]
+      ,[SCIP-Inf-2 Improvement Points]
+      ,[SCIP-Inf-3 Improvement Points]
+      ,[SCIP-Inf-9 Improvement Points]
+      ,[SCIP-Inf-2 Measure Score]
+      ,[SCIP-Inf-3 Measure Score]
+      ,[SCIP-Inf-9 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_hai_06_08_2016]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([SCIP-Inf-2 Performance Rate]
+      ,[SCIP-Inf-3 Performance Rate]
+      ,[SCIP-Inf-9 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([SCIP-Inf-2 Achievement Points]
+      ,[SCIP-Inf-3 Achievement Points]
+      ,[SCIP-Inf-9 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([SCIP-Inf-2 Improvement Points]
+      ,[SCIP-Inf-3 Improvement Points]
+      ,[SCIP-Inf-9 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([SCIP-Inf-2 Measure Score]
+      ,[SCIP-Inf-3 Measure Score]
+      ,[SCIP-Inf-9 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4)) 
+
+
+--INDIVIDUAL CODES
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2013 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [HAI Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_hai_05_28_2013]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([HAI Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2014 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [HAI Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_hai_10_28_2014]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([HAI Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2015 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [HAI Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_hai_10_28_2015]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([HAI Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2016 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [HAI Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_hai_06_08_2016]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([HAI Condition/Procedure Score])) AS a
+
+--HF
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2013 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [HF-1 Performance Rate]
+	  ,[HF-1 Achievement Points]
+	  ,[HF-1 Improvement Points]
+	  ,[HF-1 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_hf_05_28_2013]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([HF-1 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([HF-1 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([HF-1 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([HF-1 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider Number], 2014 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [HF-1 Performance Rate]
+	  ,[HF-1 Achievement Points]
+	  ,[HF-1 Improvement Points]
+	  ,[HF-1 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_hf_10_28_2014]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([HF-1 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([HF-1 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([HF-1 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([HF-1 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+
+--INDIVIDUAL CODES
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2013 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [HF Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_hf_05_28_2013]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([HF Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2014 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [HF Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_hf_10_28_2014]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([HF Condition/Procedure Score])) AS a 
+
+--PN
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2013 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [PN-3b Performance Rate]
+      ,[PN-6 Performance Rate]
+	  ,[PN-3b Achievement Points]
+      ,[PN-6 Achievement Points]
+	  ,[PN-3b Improvement Points]
+      ,[PN-6 Improvement Points]
+	  ,[PN-3b Measure Score]
+      ,[PN-6 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_pn_05_28_2013]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([PN-3b Performance Rate]
+      ,[PN-6 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([PN-3b Achievement Points]
+      ,[PN-6 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([PN-3b Improvement Points]
+      ,[PN-6 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([PN-3b Measure Score]
+      ,[PN-6 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider Number], 2014 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [PN-3b Performance Rate]
+      ,[PN-6 Performance Rate]
+	  ,[PN-3b Achievement Points]
+      ,[PN-6 Achievement Points]
+	  ,[PN-3b Improvement Points]
+      ,[PN-6 Improvement Points]
+	  ,[PN-3b Measure Score]
+      ,[PN-6 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_pn_10_28_2014]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([PN-3b Performance Rate]
+      ,[PN-6 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([PN-3b Achievement Points]
+      ,[PN-6 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([PN-3b Improvement Points]
+      ,[PN-6 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([PN-3b Measure Score]
+      ,[PN-6 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+ SELECT [Provider Number], 2015 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number]
+      ,[PN-6 Performance Rate]	  
+      ,[PN-6 Achievement Points]	  
+      ,[PN-6 Improvement Points]	  
+      ,[PN-6 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_pn_10_28_2015]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([PN-6 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([PN-6 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([PN-6 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([PN-6 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+ SELECT [Provider Number], 2016 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number]
+      ,[PN-6 Performance Rate]	  
+      ,[PN-6 Achievement Points]	  
+      ,[PN-6 Improvement Points]	  
+      ,[PN-6 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_pn_06_08_2016]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([PN-6 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([PN-6 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([PN-6 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([PN-6 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+--INDIVIDUAL CODES
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2013 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [PN Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_pn_05_28_2013]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([PN Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2014 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [PN Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_pn_10_28_2014]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([PN Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2015 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [PN Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_pn_10_28_2015]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([PN Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2016 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [PN Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_pn_06_08_2016]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([PN Condition/Procedure Score])) AS a
+
+--SCIP
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2013 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP-Card-2 Performance Rate]
+      ,[SCIP-VTE-2 Performance Rate]
+	  ,[SCIP-VTE-1 Performance Rate]
+	  ,[SCIP-Card-2 Achievement Points]
+      ,[SCIP-VTE-2 Achievement Points]
+	  ,[SCIP-VTE-1 Achievement Points]
+	  ,[SCIP-Card-2 Improvement Points]
+      ,[SCIP-VTE-2 Improvement Points]
+	  ,[SCIP-VTE-1 Improvement Points]
+	  ,[SCIP-Card-2 Measure Score]
+      ,[SCIP-VTE-2 Measure Score]
+	  ,[SCIP-VTE-1 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_scip_05_28_2013]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([SCIP-Card-2 Performance Rate]
+      ,[SCIP-VTE-2 Performance Rate], [SCIP-VTE-1 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([SCIP-Card-2 Achievement Points]
+      ,[SCIP-VTE-2 Achievement Points], [SCIP-VTE-1 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([SCIP-Card-2 Improvement Points]
+      ,[SCIP-VTE-2 Improvement Points], [SCIP-VTE-1 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([SCIP-Card-2 Measure Score]
+      ,[SCIP-VTE-2 Measure Score], [SCIP-VTE-1 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider Number], 2014 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP-Card-2 Performance Rate]
+      ,[SCIP-VTE-2 Performance Rate]
+	  ,[SCIP-Card-2 Achievement Points]
+      ,[SCIP-VTE-2 Achievement Points]
+	  ,[SCIP-Card-2 Improvement Points]
+      ,[SCIP-VTE-2 Improvement Points]
+	  ,[SCIP-Card-2 Measure Score]
+      ,[SCIP-VTE-2 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_scip_10_28_2014]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([SCIP-Card-2 Performance Rate]
+      ,[SCIP-VTE-2 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([SCIP-Card-2 Achievement Points]
+      ,[SCIP-VTE-2 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([SCIP-Card-2 Improvement Points]
+      ,[SCIP-VTE-2 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([SCIP-Card-2 Measure Score]
+      ,[SCIP-VTE-2 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider Number], 2015 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP-Card-2 Performance Rate]
+      ,[SCIP-VTE-2 Performance Rate]
+	  ,[SCIP-Card-2 Achievement Points]
+      ,[SCIP-VTE-2 Achievement Points]
+	  ,[SCIP-Card-2 Improvement Points]
+      ,[SCIP-VTE-2 Improvement Points]
+	  ,[SCIP-Card-2 Measure Score]
+      ,[SCIP-VTE-2 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_scip_10_28_2015]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([SCIP-Card-2 Performance Rate]
+      ,[SCIP-VTE-2 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([SCIP-Card-2 Achievement Points]
+      ,[SCIP-VTE-2 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([SCIP-Card-2 Improvement Points]
+      ,[SCIP-VTE-2 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([SCIP-Card-2 Measure Score]
+      ,[SCIP-VTE-2 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider Number], 2016 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP-Card-2 Performance Rate]
+      ,[SCIP-VTE-2 Performance Rate]
+	  ,[SCIP-Card-2 Achievement Points]
+      ,[SCIP-VTE-2 Achievement Points]
+	  ,[SCIP-Card-2 Improvement Points]
+      ,[SCIP-VTE-2 Improvement Points]
+	  ,[SCIP-Card-2 Measure Score]
+      ,[SCIP-VTE-2 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_scip_06_08_2016]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([SCIP-Card-2 Performance Rate]
+      ,[SCIP-VTE-2 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([SCIP-Card-2 Achievement Points]
+      ,[SCIP-VTE-2 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([SCIP-Card-2 Improvement Points]
+      ,[SCIP-VTE-2 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([SCIP-Card-2 Measure Score]
+      ,[SCIP-VTE-2 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+
+--Individual Codes
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2013 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2013_Hvbp_scip_05_28_2013]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([SCIP Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2014 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_scip_10_28_2014]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([SCIP Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2015 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_scip_10_28_2015]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([SCIP Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider Number], 2016 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [SCIP Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_scip_06_08_2016]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([SCIP Condition/Procedure Score])) AS a
+
+--Efficiency
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2014 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number]
+      ,[MSPB-1 Performance Rate]	  
+      ,[MSPB-1 Achievement Points]	  
+      ,[MSPB-1 Improvement Points]	  
+      ,[MSPB-1 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_efficiency_10_28_2014]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([MSPB-1 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([MSPB-1 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([MSPB-1 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([MSPB-1 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider_Number], 2015 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider_Number]
+      ,[MSPB-1 Performance Rate]	  
+      ,[MSPB-1 Achievement Points]	  
+      ,[MSPB-1 Improvement Points]	  
+      ,[MSPB-1 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_Efficiency_10_28_2015]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([MSPB-1 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([MSPB-1 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([MSPB-1 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([MSPB-1 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider_Number], 2016 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider_Number]
+      ,[MSPB-1 Performance Rate]	  
+      ,[MSPB-1 Achievement Points]	  
+      ,[MSPB-1 Improvement Points]	  
+      ,[MSPB-1 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_Efficiency_06_08_2016]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([MSPB-1 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([MSPB-1 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([MSPB-1 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([MSPB-1 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+
+--Outcome
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2014 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number]
+      ,[MORT-30-AMI Performance Rate]
+      ,[MORT-30-AMI Achievement Points]
+      ,[MORT-30-AMI Improvement Points]
+      ,[MORT-30-AMI Measure Score]
+      ,[MORT-30-HF Performance Rate]
+      ,[MORT-30-HF Achievement Points]
+      ,[MORT-30-HF Improvement Points]
+      ,[MORT-30-HF Measure Score]
+      ,[MORT-30-PN Performance Rate]
+      ,[MORT-30-PN Achievement Points]
+      ,[MORT-30-PN Improvement Points]
+      ,[MORT-30-PN Measure Score]
+      ,[PSI-90 Performance Rate]
+      ,[PSI-90 Achievement Points]
+      ,[PSI-90 Improvement Points]
+      ,[PSI-90 Measure Score]
+      ,[HAI-1 Performance Rate]
+      ,[HAI-1 Achievement Points]
+      ,[HAI-1 Improvement Points]
+      ,[HAI-1 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2014_Hvbp_outcome_10_28_2014]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([MORT-30-AMI Performance Rate]
+  ,[MORT-30-HF Performance Rate]
+  ,[MORT-30-PN Performance Rate]
+  ,[PSI-90 Performance Rate]
+  ,[HAI-1 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([MORT-30-AMI Achievement Points]
+  ,[MORT-30-HF Achievement Points]
+  ,[MORT-30-PN Achievement Points]
+  ,[PSI-90 Achievement Points]
+  ,[HAI-1 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([MORT-30-AMI Improvement Points]
+  ,[MORT-30-HF Improvement Points]
+  ,[MORT-30-PN Improvement Points]
+  ,[PSI-90 Improvement Points]
+  ,[HAI-1 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([MORT-30-AMI Measure Score]
+  ,[MORT-30-HF Measure Score]
+  ,[MORT-30-PN Measure Score]
+  ,[PSI-90 Measure Score]
+  ,[HAI-1 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider Number], 2015 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number]
+      ,[MORT-30-AMI Performance Rate]
+      ,[MORT-30-AMI Achievement Points]
+      ,[MORT-30-AMI Improvement Points]
+      ,[MORT-30-AMI Measure Score]
+      ,[MORT-30-HF Performance Rate]
+      ,[MORT-30-HF Achievement Points]
+      ,[MORT-30-HF Improvement Points]
+      ,[MORT-30-HF Measure Score]
+      ,[MORT-30-PN Performance Rate]
+      ,[MORT-30-PN Achievement Points]
+      ,[MORT-30-PN Improvement Points]
+      ,[MORT-30-PN Measure Score]
+      ,[PSI-90 Performance Rate]
+      ,[PSI-90 Achievement Points]
+      ,[PSI-90 Improvement Points]
+      ,[PSI-90 Measure Score]
+      ,[HAI-1 Performance Rate]
+      ,[HAI-1 Achievement Points]
+      ,[HAI-1 Improvement Points]
+      ,[HAI-1 Measure Score]
+	  ,[HAI-2 Performance Rate]
+      ,[HAI-2 Achievement Points]
+      ,[HAI-2 Improvement Points]
+      ,[HAI-2 Measure Score]
+      ,[HAI-3 Performance Rate]
+      ,[HAI-3 Achievement Points]
+      ,[HAI-3 Improvement Points]
+      ,[HAI-3 Measure Score]
+      ,[HAI-4 Performance Rate]
+      ,[HAI-4 Achievement Points]
+      ,[HAI-4 Improvement Points]
+      ,[HAI-4 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_outcome_11_17_2015]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([MORT-30-AMI Performance Rate]
+  ,[MORT-30-HF Performance Rate]
+  ,[MORT-30-PN Performance Rate]
+  ,[PSI-90 Performance Rate]
+  ,[HAI-1 Performance Rate]
+  ,[HAI-2 Performance Rate]
+  ,[HAI-3 Performance Rate]
+  ,[HAI-4 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([MORT-30-AMI Achievement Points]
+  ,[MORT-30-HF Achievement Points]
+  ,[MORT-30-PN Achievement Points]
+  ,[PSI-90 Achievement Points]
+  ,[HAI-1 Achievement Points]
+  ,[HAI-2 Achievement Points]
+  ,[HAI-3 Achievement Points]
+  ,[HAI-4 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([MORT-30-AMI Improvement Points]
+  ,[MORT-30-HF Improvement Points]
+  ,[MORT-30-PN Improvement Points]
+  ,[PSI-90 Improvement Points]
+  ,[HAI-1 Improvement Points]
+  ,[HAI-2 Improvement Points]
+  ,[HAI-3 Improvement Points]
+  ,[HAI-4 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([MORT-30-AMI Measure Score]
+  ,[MORT-30-HF Measure Score]
+  ,[MORT-30-PN Measure Score]
+  ,[PSI-90 Measure Score]
+  ,[HAI-1 Measure Score]
+  ,[HAI-2 Measure Score]
+  ,[HAI-3 Measure Score]
+  ,[HAI-4 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider Number], 2016 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider Number]
+      ,[MORT-30-AMI Performance Rate]
+      ,[MORT-30-AMI Achievement Points]
+      ,[MORT-30-AMI Improvement Points]
+      ,[MORT-30-AMI Measure Score]
+      ,[MORT-30-HF Performance Rate]
+      ,[MORT-30-HF Achievement Points]
+      ,[MORT-30-HF Improvement Points]
+      ,[MORT-30-HF Measure Score]
+      ,[MORT-30-PN Performance Rate]
+      ,[MORT-30-PN Achievement Points]
+      ,[MORT-30-PN Improvement Points]
+      ,[MORT-30-PN Measure Score]
+      ,[PSI-90 Performance Rate]
+      ,[PSI-90 Achievement Points]
+      ,[PSI-90 Improvement Points]
+      ,[PSI-90 Measure Score]
+      ,[HAI-1 Performance Rate]
+      ,[HAI-1 Achievement Points]
+      ,[HAI-1 Improvement Points]
+      ,[HAI-1 Measure Score]
+	  ,[HAI-2 Performance Rate]
+      ,[HAI-2 Achievement Points]
+      ,[HAI-2 Improvement Points]
+      ,[HAI-2 Measure Score]
+      ,[HAI-3 Performance Rate]
+      ,[HAI-3 Achievement Points]
+      ,[HAI-3 Improvement Points]
+      ,[HAI-3 Measure Score]
+      ,[HAI-4 Performance Rate]
+      ,[HAI-4 Achievement Points]
+      ,[HAI-4 Improvement Points]
+      ,[HAI-4 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_outcome_06_08_2016]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([MORT-30-AMI Performance Rate]
+  ,[MORT-30-HF Performance Rate]
+  ,[MORT-30-PN Performance Rate]
+  ,[PSI-90 Performance Rate]
+  ,[HAI-1 Performance Rate]
+  ,[HAI-2 Performance Rate]
+  ,[HAI-3 Performance Rate]
+  ,[HAI-4 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([MORT-30-AMI Achievement Points]
+  ,[MORT-30-HF Achievement Points]
+  ,[MORT-30-PN Achievement Points]
+  ,[PSI-90 Achievement Points]
+  ,[HAI-1 Achievement Points]
+  ,[HAI-2 Achievement Points]
+  ,[HAI-3 Achievement Points]
+  ,[HAI-4 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([MORT-30-AMI Improvement Points]
+  ,[MORT-30-HF Improvement Points]
+  ,[MORT-30-PN Improvement Points]
+  ,[PSI-90 Improvement Points]
+  ,[HAI-1 Improvement Points]
+  ,[HAI-2 Improvement Points]
+  ,[HAI-3 Improvement Points]
+  ,[HAI-4 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([MORT-30-AMI Measure Score]
+  ,[MORT-30-HF Measure Score]
+  ,[MORT-30-PN Measure Score]
+  ,[PSI-90 Measure Score]
+  ,[HAI-1 Measure Score]
+  ,[HAI-2 Measure Score]
+  ,[HAI-3 Measure Score]
+  ,[HAI-4 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+
+--Individual Codes
+INSERT INTO @HVPBData
+SELECT [Provider Number], 2015 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [Combined SSI Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_outcome_11_17_2015]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([Combined SSI Measure Score])) AS a
+UNION
+SELECT [Provider Number], 2016 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider Number], [Combined SSI Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_outcome_06_08_2016]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([Combined SSI Measure Score])) AS a
+
+--IMM
+INSERT INTO @HVPBData
+SELECT [Provider_Number], 2015 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider_Number]
+      ,[IMM-2 Performance Rate]	  
+      ,[IMM-2 Achievement Points]	  
+      ,[IMM-2 Improvement Points]	  
+      ,[IMM-2 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_imm2_10_28_2015]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([IMM-2 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([IMM-2 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([IMM-2 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([IMM-2 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+UNION
+SELECT [Provider_Number], 2016 AS DataYear, UPPER(REPLACE(LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1) - 1), '-', '_')) As MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore
+  FROM 
+	(SELECT [Provider_Number]
+      ,[IMM-2 Performance Rate]	  
+      ,[IMM-2 Achievement Points]	  
+      ,[IMM-2 Improvement Points]	  
+      ,[IMM-2 Measure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_imm2_06_08_2016]) p
+ UNPIVOT
+  (PerformanceRate FOR MeasureCode1 IN ([IMM-2 Performance Rate])) AS a 
+UNPIVOT
+  (AchievementPoints FOR MeasureCode2 IN ([IMM-2 Achievement Points])) AS b
+UNPIVOT
+  (ImprovementPoints FOR MeasureCode3 IN ([IMM-2 Improvement Points])) AS c
+UNPIVOT
+  (MeasureScore FOR MeasureCode4 IN ([IMM-2 Measure Score])) AS d
+WHERE 
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode2, CHARINDEX(' ', MeasureCode2))  
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode3, CHARINDEX(' ', MeasureCode3)) 
+AND
+	LEFT(MeasureCode1, CHARINDEX(' ', MeasureCode1)) = LEFT(MeasureCode4, CHARINDEX(' ', MeasureCode4))
+
+--INDIVIDUAL MEASURES
+INSERT INTO @HVPBData
+SELECT [Provider_Number], 2015 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider_Number], [Preventive Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2015_Hvbp_imm2_10_28_2015]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([Preventive Condition/Procedure Score])) AS a
+UNION
+SELECT [Provider_Number], 2016 AS DataYear, MeasureCode1 As MeasureCode, null, null, null, MeasureScore
+  FROM 
+	(SELECT [Provider_Number], [Preventive Condition/Procedure Score]
+      FROM [HospitalCompareStage].[dbo].[2016_Hvbp_imm2_06_08_2016]) p
+ UNPIVOT
+  (MeasureScore FOR MeasureCode1 IN ([Preventive Condition/Procedure Score])) AS a
+
+
+SELECT f.ProviderId, f.DataYear, 
+CASE WHEN MeasureCode = 'PSI_90' THEN 'PSI_90_SAFETY' ELSE MeasureCode END AS MeasureCode, PerformanceRate, AchievementPoints, ImprovementPoints, MeasureScore FROM @HVPBData f
+INNER JOIN UNRHealthcareData.dbo.HospitalFactGeneral hfg on hfg.ProviderId = f.ProviderID and hfg.DataYear = f.DataYear
+ORDER BY f.[ProviderId], f.[DataYear], f.MeasureCode</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\HVBP Score Source.Connections[OleDbConnection]"
+                  connectionManagerID="{A99FAEE5-C578-4ACD-9857-18D747CAC2A6}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBMaster]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[ProviderId]"
+                      name="ProviderId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[DataYear]"
+                      name="DataYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[MeasureCode]"
+                      name="MeasureCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[PerformanceRate]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[PerformanceRate]"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[PerformanceRate]"
+                      name="PerformanceRate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[AchievementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[AchievementPoints]"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[AchievementPoints]"
+                      name="AchievementPoints"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[ImprovementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[ImprovementPoints]"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[ImprovementPoints]"
+                      name="ImprovementPoints"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[MeasureScore]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureScore]"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[MeasureScore]"
+                      name="MeasureScore"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ProviderId" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[DataYear]"
+                      dataType="i4"
+                      name="DataYear" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureCode" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[PerformanceRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="PerformanceRate" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[AchievementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="AchievementPoints" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[ImprovementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="ImprovementPoints" />
+                    <externalMetadataColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].ExternalColumns[MeasureScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      name="MeasureScore" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[ProviderId]"
+                      name="ProviderId" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[DataYear]"
+                      name="DataYear" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureCode]"
+                      name="MeasureCode" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[PerformanceRate]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[PerformanceRate]"
+                      name="PerformanceRate" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[AchievementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[AchievementPoints]"
+                      name="AchievementPoints" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[ImprovementPoints]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[ImprovementPoints]"
+                      name="ImprovementPoints" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureScore]"
+                      codePage="1252"
+                      dataType="str"
+                      length="100"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[MeasureScore]"
+                      name="MeasureScore" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Populate Data Tables\Lookup MeasureId"
+              componentClassID="Microsoft.Lookup"
+              contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+              description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+              name="Lookup MeasureId"
+              usesDispositions="true"
+              version="6">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the SQL statement that generates the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[Measure]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                  expressionType="Notify"
+                  name="SqlCommandParam"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[Measure]) [refTable]
+where [refTable].[MeasureCode] = ?</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the type of connection used to access the reference dataset."
+                  name="ConnectionType"
+                  typeConverter="LookupConnectionType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the cache type of the lookup table."
+                  name="CacheType"
+                  typeConverter="CacheType">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                  name="NoMatchBehavior"
+                  typeConverter="LookupNoMatchBehavior">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                  name="NoMatchCachePercentage">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                  name="MaxMemoryUsage">25</property>
+                <property
+                  dataType="System.Int64"
+                  description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                  name="MaxMemoryUsage64">25</property>
+                <property
+                  dataType="System.String"
+                  description="Indicates whether to reference metadata in an XML format."
+                  name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="MeasureId" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="MeasureCode" dataType="DT_STR" length="100" precision="0" scale="0" codePage="1252"/&gt;&lt;referenceColumn name="MeasureName" dataType="DT_STR" length="255" precision="0" scale="0" codePage="1252"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                <property
+                  containsID="true"
+                  dataType="System.String"
+                  description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                  name="ParameterMap">#{Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[MeasureCode]};</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                  name="TreatDuplicateKeysAsError">false</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Connections[OleDbConnection]"
+                  connectionManagerID="{519027B6-004D-431F-A052-1086E046AF88}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[DBUNRHealthcareData]"
+                  description="Connection manager used to access lookup data."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]"
+                  name="Lookup Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input].Columns[MeasureCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="100"
+                      cachedName="MeasureCode"
+                      lineageId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output].Columns[MeasureCode]">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table that a column joins."
+                          name="JoinToReferenceColumn">MeasureCode</property>
+                        <property
+                          dataType="System.Null"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn" />
+                      </properties>
+                    </inputColumn>
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output]"
+                  errorOrTruncationOperation="Lookup"
+                  errorRowDisposition="FailComponent"
+                  exclusionGroup="1"
+                  name="Lookup Match Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Copy Column"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output].Columns[MeasureId]"
+                      name="MeasureId"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.String"
+                          description="Specifies the column in the reference table from which a column is copied."
+                          name="CopyFromReferenceColumn">MeasureId</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup No Match Output]"
+                  description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                  exclusionGroup="1"
+                  name="Lookup No Match Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <externalMetadataColumns />
+                </output>
+                <output
+                  refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Lookup Error Output"
+                  synchronousInputId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Populate Data Tables.Paths[Lookup Match Output]"
+              endId="Package\Populate Data Tables\HVBP Score Destination.Inputs[OLE DB Destination Input]"
+              name="Lookup Match Output"
+              startId="Package\Populate Data Tables\Lookup MeasureId.Outputs[Lookup Match Output]" />
+            <path
+              refId="Package\Populate Data Tables.Paths[OLE DB Source Output]"
+              endId="Package\Populate Data Tables\Lookup MeasureId.Inputs[Lookup Input]"
+              name="OLE DB Source Output"
+              startId="Package\Populate Data Tables\HVBP Score Source.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{1613E05C-E8C2-4298-A54C-9E7135AAADB5}"
+      DTS:From="Package\Populate Data Tables"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\Create HVBPScorePivot View" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="215,42"
+          Id="Package\Create HVBPScorePivot View"
+          TopLeft="118,180" />
+        <NodeLayout
+          Size="181,42"
+          Id="Package\Populate Data Tables"
+          TopLeft="98,65" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="188.5,107">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="37,73"
+              Start="0,0"
+              End="37,65.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,32.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,32.5"
+                    Point2="0,36.5"
+                    Point3="4,36.5" />
+                  <mssgle:LineSegment
+                    End="33,36.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="33,36.5"
+                    Point2="37,36.5"
+                    Point3="37,40.5" />
+                  <mssgle:LineSegment
+                    End="37,65.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Populate Data Tables">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="168,42"
+          Id="Package\Populate Data Tables\Lookup MeasureId"
+          TopLeft="129,175" />
+        <NodeLayout
+          Size="172,42"
+          Id="Package\Populate Data Tables\HVBP Score Source"
+          TopLeft="102,69" />
+        <NodeLayout
+          Size="192,42"
+          Id="Package\Populate Data Tables\HVBP Score Destination"
+          TopLeft="198,309" />
+        <EdgeLayout
+          Id="Package\Populate Data Tables.Paths[OLE DB Source Output]"
+          TopLeft="188,111">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="25,64"
+              Start="0,0"
+              End="25,56.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,28" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,28"
+                    Point2="0,32"
+                    Point3="4,32" />
+                  <mssgle:LineSegment
+                    End="21,32" />
+                  <mssgle:CubicBezierSegment
+                    Point1="21,32"
+                    Point2="25,32"
+                    Point3="25,36" />
+                  <mssgle:LineSegment
+                    End="25,56.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Populate Data Tables.Paths[Lookup Match Output]"
+          TopLeft="213,217">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="81,92"
+              Start="0,0"
+              End="81,84.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,42" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,42"
+                    Point2="0,46"
+                    Point3="4,46" />
+                  <mssgle:LineSegment
+                    End="77,46" />
+                  <mssgle:CubicBezierSegment
+                    Point1="77,46"
+                    Point2="81,46"
+                    Point3="81,50" />
+                  <mssgle:LineSegment
+                    End="81,84.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-7.69138671875,51,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\Lookup MeasureId">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:string">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[Measure]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:string">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\HVBP Score Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Populate Data Tables\HVBP Score Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
